@@ -1,0 +1,28 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# next.js
+.next/
+out/
+
+# PWA generated files
+public/sw.js
+public/workbox-*.js
+
+# env files
+.env*.local
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
