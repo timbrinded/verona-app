@@ -37,7 +37,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Cocktail Bar': '#F472B6',
   'Aperitivo': '#FB923C',
   'Pub': '#60A5FA',
-  'Craft Beer': '#FBBF24',
   'Gelato': '#A78BFA',
   'Accommodation': '#EF4444',
 };
@@ -52,9 +51,14 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Cocktail Bar': '🍸',
   'Aperitivo': '🥂',
   'Pub': '🍺',
-  'Craft Beer': '🍻',
   'Gelato': '🍦',
   'Accommodation': '🏠',
+};
+
+// Normalize categories (merge Craft Beer into Pub)
+const normalizeCategory = (cat: string): string => {
+  if (cat === 'Craft Beer') return 'Pub';
+  return cat;
 };
 
 // Verona center coordinates
@@ -70,7 +74,7 @@ export default function Home() {
   const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isOffline, setIsOffline] = useState(false);
@@ -80,22 +84,19 @@ export default function Home() {
     fetch('/data/places.json')
       .then(res => res.json())
       .then(data => {
-        // Parse coordinates from Google Maps URLs
+        // Parse coordinates from Google Maps URLs and normalize categories
         const placesWithCoords = data.map((p: Place) => {
-          if (p.googleMaps) {
-            const match = p.googleMaps.match(/@([\d.-]+),([\d.-]+)/);
+          const normalized = { ...p, category: normalizeCategory(p.category) };
+          if (normalized.googleMaps) {
+            const match = normalized.googleMaps.match(/@([\d.-]+),([\d.-]+)/);
             if (match) {
-              return { ...p, lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+              return { ...normalized, lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             }
           }
-          return p;
+          return normalized;
         });
         setPlaces(placesWithCoords);
         setFilteredPlaces(placesWithCoords);
-        
-        // Initialize all categories as active
-        const cats = new Set<string>(placesWithCoords.map((p: Place) => p.category).filter(Boolean));
-        setActiveCategories(cats);
       })
       .catch(() => {
         // Try loading from cache/IndexedDB for offline
@@ -212,9 +213,9 @@ export default function Home() {
   useEffect(() => {
     let filtered = places;
 
-    // Filter by active categories
-    if (activeCategories.size > 0 && activeCategories.size < places.length) {
-      filtered = filtered.filter(p => activeCategories.has(p.category));
+    // Filter by active category (null = show all)
+    if (activeCategory) {
+      filtered = filtered.filter(p => p.category === activeCategory);
     }
 
     // Filter by search query
@@ -228,7 +229,7 @@ export default function Home() {
     }
 
     setFilteredPlaces(filtered);
-  }, [places, activeCategories, searchQuery]);
+  }, [places, activeCategory, searchQuery]);
 
   // Calculate distance from user
   const getDistanceFromUser = useCallback((place: Place) => {
@@ -243,15 +244,9 @@ export default function Home() {
     return R * c;
   }, [userLocation]);
 
-  // Toggle category filter
+  // Toggle category filter (single-select: click to select, click again to deselect)
   const toggleCategory = (cat: string) => {
-    const newCats = new Set(activeCategories);
-    if (newCats.has(cat)) {
-      newCats.delete(cat);
-    } else {
-      newCats.add(cat);
-    }
-    setActiveCategories(newCats);
+    setActiveCategory(activeCategory === cat ? null : cat);
   };
 
   // Get all unique categories
@@ -296,7 +291,7 @@ export default function Home() {
                 key={cat}
                 onClick={() => toggleCategory(cat)}
                 className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-all ${
-                  activeCategories.has(cat)
+                  activeCategory === cat
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-200 text-gray-600'
                 }`}
