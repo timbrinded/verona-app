@@ -33,6 +33,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  turbopack: {},
 };
 
 module.exports = withPWA(nextConfig);
