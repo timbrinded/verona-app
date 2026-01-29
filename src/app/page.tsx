@@ -23,6 +23,7 @@ interface Place {
   notes: string;
   lat?: number;
   lng?: number;
+  isHomeBase?: boolean;
 }
 
 // Category colors
@@ -38,6 +39,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Pub': '#60A5FA',
   'Craft Beer': '#FBBF24',
   'Gelato': '#A78BFA',
+  'Accommodation': '#EF4444',
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -52,6 +54,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Pub': '🍺',
   'Craft Beer': '🍻',
   'Gelato': '🍦',
+  'Accommodation': '🏠',
 };
 
 // Verona center coordinates
@@ -138,12 +141,13 @@ export default function Home() {
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove existing markers
-    document.querySelectorAll('.place-marker').forEach(el => el.remove());
+    // Remove existing markers (except home base)
+    document.querySelectorAll('.place-marker:not(.home-base-marker)').forEach(el => el.remove());
 
     // Add markers for filtered places
     filteredPlaces.forEach(place => {
       if (!place.lat || !place.lng) return;
+      if (place.isHomeBase) return; // Home base is added separately
 
       const el = document.createElement('div');
       el.className = 'place-marker';
@@ -168,6 +172,41 @@ export default function Home() {
         .addTo(map.current!);
     });
   }, [filteredPlaces]);
+
+  // Always show home base marker (regardless of filters)
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove any existing home base marker
+    document.querySelectorAll('.home-base-marker').forEach(el => el.remove());
+
+    // Find the home base
+    const homeBase = places.find(p => p.isHomeBase);
+    if (!homeBase || !homeBase.lat || !homeBase.lng) return;
+
+    const el = document.createElement('div');
+    el.className = 'place-marker home-base-marker';
+    el.style.cssText = `
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      border: 3px solid white;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(239,68,68,0.5);
+      z-index: 1000;
+    `;
+    el.innerHTML = '🏠';
+    el.onclick = () => setSelectedPlace(homeBase);
+
+    new mapboxgl.Marker(el)
+      .setLngLat([homeBase.lng, homeBase.lat])
+      .addTo(map.current!);
+  }, [places]);
 
   // Filter places
   useEffect(() => {
