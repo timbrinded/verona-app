@@ -17,11 +17,12 @@ const withPWA = require('next-pwa')({
     },
     {
       urlPattern: /\/data\/places\.json$/,
-      handler: 'CacheFirst',
+      handler: 'NetworkFirst',
       options: {
         cacheName: 'places-data',
+        networkTimeoutSeconds: 3,
         expiration: {
-          maxAgeSeconds: 60 * 60 * 24 * 7,
+          maxAgeSeconds: 60 * 10,
         },
       },
     },
