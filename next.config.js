@@ -16,6 +16,13 @@ const withPWA = require('next-pwa')({
       },
     },
     {
+      urlPattern: /\/api\/places(?:\?.*)?$/,
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'places-api',
+      },
+    },
+    {
       urlPattern: /\/data\/places\.json$/,
       handler: 'NetworkFirst',
       options: {

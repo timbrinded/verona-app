@@ -79,25 +79,34 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOffline, setIsOffline] = useState(false);
 
-  // Load places data
+  // Load places data from the live API, with the checked-in JSON as fallback.
   useEffect(() => {
-    fetch('/data/places.json?v=20260518-vino-liqouri', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        // Parse coordinates from Google Maps URLs and normalize categories
-        const placesWithCoords = data.map((p: Place) => {
-          const normalized = { ...p, category: normalizeCategory(p.category) };
-          if (normalized.googleMaps) {
-            const match = normalized.googleMaps.match(/@([\d.-]+),([\d.-]+)/);
-            if (match) {
-              return { ...normalized, lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-            }
+    const loadPlaces = async () => {
+      const fallbackUrl = '/data/places.json?v=20260518-vino-liqouri';
+      let response = await fetch('/api/places?ts=' + Date.now(), { cache: 'no-store' });
+
+      if (!response.ok) {
+        response = await fetch(fallbackUrl, { cache: 'no-store' });
+      }
+
+      const data = await response.json();
+
+      // Parse coordinates from Google Maps URLs and normalize categories
+      const placesWithCoords = data.map((p: Place) => {
+        const normalized = { ...p, category: normalizeCategory(p.category) };
+        if (normalized.googleMaps) {
+          const match = normalized.googleMaps.match(/@([\d.-]+),([\d.-]+)/);
+          if (match) {
+            return { ...normalized, lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
           }
-          return normalized;
-        });
-        setPlaces(placesWithCoords);
-        setFilteredPlaces(placesWithCoords);
-      })
+        }
+        return normalized;
+      });
+      setPlaces(placesWithCoords);
+      setFilteredPlaces(placesWithCoords);
+    };
+
+    loadPlaces()
       .catch(() => {
         // Try loading from cache/IndexedDB for offline
         setIsOffline(true);
