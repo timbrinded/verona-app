@@ -14,7 +14,7 @@
     "website": "",
     "googleMaps": "https://maps.google.com/?cid=17809652868499661668&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Google: OPERATIONAL; 4.7 from 68 reviews. Places data confirms wine bar/bar, serves beer/wine/cocktails, outdoor seating, cards/debit/contactless accepted. No public phone, website, or opening hours returned by Google Places. Google Maps URL normalized to match existing map rows. Distance is approx walking distance from Arena di Verona.",
+    "notes": "Tiny local wine bar near the Arena: intimate aperitivo stop with wine, beer and cocktails. Limited seating.",
     "lat": 45.439974899999996,
     "lng": 10.9937545
   },
@@ -300,7 +300,7 @@
     "website": "https://www.casaperbellini.com/",
     "googleMaps": "https://maps.google.com/?cid=8456609793264196088&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Casa%20Perbellini%2012%20Apostoli%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ⚠️ No recent reviews; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin 2★",
     "lat": 45.4426516,
     "lng": 10.9960526
   },
@@ -319,7 +319,7 @@
     "website": "https://ristoranteildesco.it/",
     "googleMaps": "https://maps.google.com/?cid=6579503037594533045&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Ristorante%20Il%20Desco%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ⚠️ No recent reviews; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin 1★; Consistent high ratings; Under-the-radar",
     "lat": 45.4417987,
     "lng": 10.9996818
   },
@@ -338,7 +338,7 @@
     "website": "http://www.ristorantecastelvecchio.com/",
     "googleMaps": "https://maps.google.com/?cid=15084359657239724601&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Locanda%20di%20Castelvecchio%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 2 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin Plate",
     "lat": 45.440871,
     "lng": 10.9913888
   },
@@ -357,7 +357,7 @@
     "website": "https://www.ristoranteanticatorretta.com/",
     "googleMaps": "https://maps.google.com/?cid=2287218326765170721&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Ristorante%20Antica%20Torretta%20-%20Verona%20centro%20storico%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 1 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin Plate",
     "lat": 45.4474123,
     "lng": 10.9990128
   },
@@ -376,7 +376,7 @@
     "website": "http://www.bottegavini.it/",
     "googleMaps": "https://maps.google.com/?cid=17168481875527842488&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Antica%20Bottega%20del%20Vino%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 3 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin Plate",
     "lat": 45.441603,
     "lng": 10.9971064
   },
@@ -414,7 +414,7 @@
     "website": "https://www.birramastino.it/",
     "googleMaps": "https://maps.google.com/?cid=9793019265299385997&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Under-the-radar",
     "lat": 45.4471582,
     "lng": 10.8663671
   },
@@ -433,7 +433,7 @@
     "website": "https://www.instagram.com/latana_verona?igsh=MWd1bnRhZzVsYW5r&utm_source=qr",
     "googleMaps": "https://maps.google.com/?cid=897643643617149303&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Under-the-radar",
     "lat": 45.4118873,
     "lng": 10.9882379
   },
@@ -452,7 +452,7 @@
     "website": "http://www.birradicaprio.it/",
     "googleMaps": "https://maps.google.com/?cid=12694480690644770331&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Under-the-radar",
     "lat": 45.4561236,
     "lng": 11.0603875
   },
@@ -490,7 +490,7 @@
     "website": "http://www.mastromatto.com/",
     "googleMaps": "https://maps.google.com/?cid=13768095050851228567&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.4119342,
     "lng": 10.9771394
   },
@@ -509,7 +509,7 @@
     "website": "https://www.santamariacraftpub.com/",
     "googleMaps": "https://maps.google.com/?cid=1631414754407477532&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Great value",
     "lat": 45.4440163,
     "lng": 10.9995524
   },
@@ -623,7 +623,7 @@
     "website": "https://www.birreriadapiero.com/",
     "googleMaps": "https://maps.google.com/?cid=9569922868034030612&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.443698,
     "lng": 10.9694452
   },
@@ -642,7 +642,7 @@
     "website": "https://clabverona.it/",
     "googleMaps": "https://maps.google.com/?cid=12338337886636392366&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://autoreserve.com/en/restaurants/bobpCKxvW7Y65Qoafaw3",
-    "notes": "✓ Google: OPERATIONAL; ⚠️ No recent reviews; ✓ Website responding; ✓ Phone listed; ✓ Hours listed; Booking: Not a reservable venue type",
+    "notes": "Consistent high ratings",
     "lat": 45.4391328,
     "lng": 11.002573
   },
@@ -661,7 +661,7 @@
     "website": "https://grandegiovebar.it/",
     "googleMaps": "https://maps.google.com/?cid=9265542418337458504&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value; Under-the-radar",
     "lat": 45.4427613,
     "lng": 11.0025263
   },
@@ -699,7 +699,7 @@
     "website": "http://www.romeococktailbar.it/",
     "googleMaps": "https://maps.google.com/?cid=14927338754603690299&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.4428943,
     "lng": 10.9961307
   },
@@ -718,7 +718,7 @@
     "website": "https://archivioverona.com/",
     "googleMaps": "https://maps.google.com/?cid=1896395091460314086&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.4442437,
     "lng": 10.9971085
   },
@@ -737,7 +737,7 @@
     "website": "https://www.santamariacraftpub.com/",
     "googleMaps": "https://maps.google.com/?cid=1631414754407477532&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Great value",
     "lat": 45.4440163,
     "lng": 10.9995524
   },
@@ -756,7 +756,7 @@
     "website": "https://www.limeolehouse.com/",
     "googleMaps": "https://maps.google.com/?cid=17846677791485007344&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Consistent high ratings; Hidden gem pricing; Under-the-radar",
     "lat": 45.4406231,
     "lng": 11.0080773
   },
@@ -775,7 +775,7 @@
     "website": "https://instagram.com/alchimista_verona?igshid=OGQ5ZDc2ODk2ZA==",
     "googleMaps": "https://maps.google.com/?cid=5615720209548451794&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.it/ristorante/alchimista-bistrot-e-mescole-r363655",
-    "notes": "✓ Google: OPERATIONAL; ~ 1 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed; Booking: Not a reservable venue type",
+    "notes": "Consistent high ratings; Great value; Under-the-radar",
     "lat": 45.4343263,
     "lng": 10.9898871
   },
@@ -794,7 +794,7 @@
     "website": "https://osteriadelbugiardo.it/",
     "googleMaps": "https://maps.google.com/?cid=6548163890218566655&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Osteria%20del%20Bugiardo%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 2 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Michelin Plate; Great value",
     "lat": 45.4429644,
     "lng": 10.9955694
   },
@@ -813,7 +813,7 @@
     "website": "http://www.tavernadiviastella.com/",
     "googleMaps": "https://maps.google.com/?cid=14484860897662728906&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=La%20Taverna%20di%20Via%20Stella%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 3 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Great value",
     "lat": 45.4417659,
     "lng": 10.9989269
   },
@@ -832,7 +832,7 @@
     "website": "https://bio.site/osteriasanbernardino",
     "googleMaps": "https://maps.google.com/?cid=10730517089121234393&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Osteria%20San%20Bernardino%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 1 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Consistent high ratings; Under-the-radar",
     "lat": 45.4376191,
     "lng": 10.9805497
   },
@@ -851,7 +851,7 @@
     "website": "https://social.quandoo.com/en/groups/osteria-miola-104926",
     "googleMaps": "https://maps.google.com/?cid=15287414027331423492&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Osteria%20Miola%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 2 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Hours listed",
+    "notes": "Consistent high ratings; Under-the-radar",
     "lat": 45.4342245,
     "lng": 10.9889565
   },
@@ -908,7 +908,7 @@
     "website": "http://www.osteriabertoldo.com/",
     "googleMaps": "https://maps.google.com/?cid=14460758529306838755&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Osteria%20Il%20Bertoldo%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 3 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Found on 2 sources; ✓ Hours listed",
+    "notes": "Great value",
     "lat": 45.4447064,
     "lng": 10.994713
   },
@@ -927,7 +927,7 @@
     "website": "http://www.osteriailciottolo.it/",
     "googleMaps": "https://maps.google.com/?cid=12058720005818549999&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "https://www.thefork.com/search?q=Osteria%20il%20Ciottolo%20Verona",
-    "notes": "✓ Google: OPERATIONAL; ~ 1 review(s) in last 90 days; ✓ Website responding; ✓ Phone listed; ✓ Found on 2 sources; ✓ Hours listed",
+    "notes": "Michelin Plate; Great value",
     "lat": 45.440103,
     "lng": 10.9898384
   },
@@ -984,7 +984,7 @@
     "website": "",
     "googleMaps": "https://maps.google.com/?cid=4676442764286861730&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.4487565,
     "lng": 10.9836255
   },
@@ -1022,7 +1022,7 @@
     "website": "http://www.gelateriaromana.com/",
     "googleMaps": "https://maps.google.com/?cid=7506896200883689701&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
     "booking": "",
-    "notes": "Walk-in only",
+    "notes": "Great value",
     "lat": 45.4348716,
     "lng": 10.9847469
   }

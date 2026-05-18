@@ -168,7 +168,7 @@ async function mapPageToPlace(page: NotionPage, existingPlaces: Map<string, Plac
     website: urlProp(props.Website),
     googleMaps: urlProp(props['Google Maps']),
     booking: urlProp(props.Booking),
-    notes: textProp(props.Notes),
+    notes: textProp(props['Vibe Notes']) || textProp(props.Notes),
   };
 
   const existing = existingPlaces.get(place.id) || existingPlaces.get(place.name);

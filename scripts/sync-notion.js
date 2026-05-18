@@ -173,7 +173,7 @@ async function syncPlaces() {
       website: getUrl(props.Website),
       googleMaps: getUrl(props['Google Maps']),
       booking: getUrl(props.Booking),
-      notes: getText(props.Notes),
+      notes: getText(props['Vibe Notes']) || getText(props.Notes),
     };
 
     const existing = existingPlaces.get(place.id) || existingPlaces.get(place.name);
