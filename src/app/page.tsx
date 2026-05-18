@@ -81,7 +81,7 @@ export default function Home() {
 
   // Load places data
   useEffect(() => {
-    fetch('/data/places.json', { cache: 'no-store' })
+    fetch('/data/places.json?v=20260518-vino-liqouri', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         // Parse coordinates from Google Maps URLs and normalize categories
