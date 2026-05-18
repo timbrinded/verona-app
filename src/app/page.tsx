@@ -127,7 +127,7 @@ export default function Home() {
     });
 
     // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     
     // Add geolocation control
     const geolocate = new mapboxgl.GeolocateControl({
@@ -135,7 +135,7 @@ export default function Home() {
       trackUserLocation: true,
       showUserHeading: true,
     });
-    map.current.addControl(geolocate, 'top-right');
+    map.current.addControl(geolocate, 'bottom-right');
     
     geolocate.on('geolocate', (e: any) => {
       setUserLocation([e.coords.longitude, e.coords.latitude]);
@@ -208,7 +208,6 @@ export default function Home() {
       justify-content: center;
       font-size: 22px;
       box-shadow: 0 4px 12px rgba(239,68,68,0.5);
-      z-index: 1000;
     `;
     el.innerHTML = '🏠';
     el.onclick = () => setSelectedPlace(homeBase);
@@ -262,12 +261,12 @@ export default function Home() {
   const allCategories = [...new Set(places.map(p => p.category).filter(Boolean))].sort();
 
   return (
-    <main className="h-screen w-screen relative overflow-hidden">
+    <main className="h-screen w-screen relative overflow-hidden isolate">
       {/* Map */}
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainer} className="absolute inset-0 z-0" />
 
       {/* Search bar */}
-      <div className="absolute top-4 left-4 right-4 z-10 flex gap-2">
+      <div className="absolute top-4 left-4 right-4 z-40 flex gap-2">
         <input
           type="text"
           placeholder="Search places..."
@@ -285,14 +284,14 @@ export default function Home() {
 
       {/* Offline indicator */}
       {isOffline && (
-        <div className="absolute top-16 left-4 right-4 z-10 bg-yellow-500 text-white px-4 py-2 rounded-lg text-center text-sm">
+        <div className="absolute top-16 left-4 right-4 z-40 bg-yellow-500 text-white px-4 py-2 rounded-lg text-center text-sm">
           📴 Offline mode - showing cached data
         </div>
       )}
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="absolute top-20 left-4 right-4 z-10 bg-white rounded-xl shadow-lg p-4 max-h-60 overflow-y-auto">
+        <div className="absolute top-20 left-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 max-h-60 overflow-y-auto">
           <div className="text-sm font-semibold text-gray-600 mb-2">Categories</div>
           <div className="flex flex-wrap gap-2">
             {allCategories.map(cat => (
@@ -315,13 +314,13 @@ export default function Home() {
       )}
 
       {/* Place count */}
-      <div className="absolute bottom-24 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm text-gray-600 shadow">
+      <div className="absolute bottom-24 left-4 z-40 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm text-gray-600 shadow">
         {filteredPlaces.length} places
       </div>
 
       {/* Selected place card */}
       {selectedPlace && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-2xl shadow-2xl p-4 pb-8 animate-slide-up">
+        <div className="absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-2xl shadow-2xl p-4 pb-8 animate-slide-up">
           <button
             onClick={() => setSelectedPlace(null)}
             className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"
