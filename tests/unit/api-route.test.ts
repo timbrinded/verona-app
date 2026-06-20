@@ -21,7 +21,8 @@ afterEach(() => {
 });
 
 describe("/api/places", () => {
-  it("uses static fallback on Vercel when database env is absent", async () => {
+  it("fails visibly on Vercel when database env is absent", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
     process.env.VERCEL = "1";
     delete process.env.TURSO_DATABASE_URL;
     delete process.env.DATABASE_URL;
@@ -30,12 +31,12 @@ describe("/api/places", () => {
     const response = await GET();
     const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("x-places-source")).toBe("static-fallback");
-    expect(body).toHaveLength(54);
+    expect(response.status).toBe(500);
+    expect(response.headers.get("x-places-source")).toBe("sqlite-error");
+    expect(body).toEqual({ error: "Failed to load places from SQLite" });
   });
 
-  it("falls back to static data when SQLite fails", async () => {
+  it("does not serve static data when SQLite fails", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     const dir = await mkdtemp(join(tmpdir(), "verona-route-"));
     process.env.VERCEL = "1";
@@ -46,8 +47,8 @@ describe("/api/places", () => {
     const response = await GET();
     const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("x-places-source")).toBe("static-fallback-after-error");
-    expect(body).toHaveLength(54);
+    expect(response.status).toBe(500);
+    expect(response.headers.get("x-places-source")).toBe("sqlite-error");
+    expect(body).toEqual({ error: "Failed to load places from SQLite" });
   });
 });

@@ -91,15 +91,13 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isOffline, setIsOffline] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const loadPlaces = async () => {
-      let response = await fetch("/api/places");
-
+      const response = await fetch("/api/places");
       if (!response.ok) {
-        response = await fetch("/data/places.json");
-        setIsOffline(true);
+        throw new Error(`Places API returned ${response.status}`);
       }
 
       const data = parsePlacesPayload(await response.json());
@@ -111,8 +109,10 @@ export default function Home() {
       setPlaces(normalized);
     };
 
-    loadPlaces().catch(() => {
-      setIsOffline(true);
+    loadPlaces().catch((error: unknown) => {
+      console.error("Failed to load places", error);
+      setPlaces([]);
+      setLoadError("Unable to load places from the database");
     });
   }, []);
 
@@ -297,9 +297,9 @@ export default function Home() {
         </button>
       </div>
 
-      {isOffline && (
-        <div className="absolute top-16 left-4 right-4 z-40 bg-yellow-500 text-white px-4 py-2 rounded-lg text-center text-sm">
-          📴 Offline mode - showing cached data
+      {loadError && (
+        <div className="absolute top-16 left-4 right-4 z-40 bg-red-600 text-white px-4 py-2 rounded-lg text-center text-sm shadow-lg">
+          {loadError}
         </div>
       )}
 

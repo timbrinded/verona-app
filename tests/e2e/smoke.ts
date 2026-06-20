@@ -111,16 +111,17 @@ async function main(): Promise<void> {
       await page.getByRole("button", { name: /Pub/ }).click();
       await page.getByText("14 places").waitFor({ timeout: 10_000 });
 
-      console.log("[smoke] Checking static fallback path");
-      const fallbackPage = await context.newPage();
-      await fallbackPage.route("**/api/places", (route) =>
+      console.log("[smoke] Checking visible API failure path");
+      const errorPage = await context.newPage();
+      await errorPage.route("**/api/places", (route) =>
         route.fulfill({ status: 500, contentType: "application/json", body: '{"error":"forced"}' }),
       );
-      await fallbackPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
-      await fallbackPage.getByText("Offline mode").waitFor({ timeout: 10_000 });
-      await fallbackPage.waitForFunction(() => document.querySelectorAll(".place-marker").length >= 10, undefined, {
-        timeout: 20_000,
-      });
+      await errorPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
+      await errorPage.getByText("Unable to load places from the database").waitFor({ timeout: 10_000 });
+      const markerCount = await errorPage.locator(".place-marker").count();
+      if (markerCount !== 0) {
+        throw new Error(`Expected no markers after API failure, saw ${markerCount}`);
+      }
     } finally {
       await browser.close();
     }

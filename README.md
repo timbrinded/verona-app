@@ -6,9 +6,9 @@ Mobile-first Verona travel guide backed by SQLite-compatible Turso/libSQL.
 
 - Next.js app with a full-screen Mapbox map.
 - `/api/places` reads active places from SQLite.
-- The browser fetches places once on load; Serwist PWA caching keeps the API/static export available for travel use.
+- The browser fetches places once on load; database/API failures are shown as visible errors.
 - `data/places.seed.json` is the editable seed source.
-- `public/data/places.json` is a generated static fallback exported from SQLite.
+- `public/data/places.json` is a generated data snapshot exported from SQLite. The app does not read it at runtime.
 
 ## Environment
 
@@ -36,7 +36,7 @@ Install dependencies:
 npm ci
 ```
 
-Create/update the local schema, seed from `data/places.seed.json`, and export the static fallback:
+Create/update the local schema, seed from `data/places.seed.json`, and export the static data snapshot:
 
 ```bash
 npm run db:setup
@@ -75,7 +75,7 @@ Start a Parallel enrichment job:
 npm run enrich:run -- data/enrichment/parallel-input-YYYY-MM-DD.csv
 ```
 
-When the Parallel output CSV is ready, import it and regenerate the fallback JSON:
+When the Parallel output CSV is ready, import it and regenerate the static data snapshot:
 
 ```bash
 npm run enrich:import -- data/enrichment/parallel-input-YYYY-MM-DD.output.csv
@@ -94,7 +94,7 @@ npm run build
 npm run test:e2e
 ```
 
-`npm run test:e2e` starts the production build locally, checks `/api/places`, verifies map markers and filtering, and forces an API failure to confirm static fallback rendering.
+`npm run test:e2e` starts the production build locally, checks `/api/places`, verifies map markers and filtering, and forces an API failure to confirm the error is visible.
 
 ## Deployment
 
@@ -104,7 +104,7 @@ Before deploying a database-backed change:
 
 ```bash
 TURSO_DATABASE_URL=libsql://your-database.turso.io TURSO_AUTH_TOKEN=... npm run db:setup
-git push public HEAD:main
+git push origin HEAD:main
 ```
 
 After deployment, verify production is reading Turso:

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parsePlacesPayload } from "../../src/lib/place-validation";
 
 describe("place payload validation", () => {
-  it("accepts the generated fallback dataset", async () => {
+  it("accepts the generated data snapshot", async () => {
     const payload = JSON.parse(await readFile("public/data/places.json", "utf8"));
 
     expect(parsePlacesPayload(payload)).toHaveLength(54);
