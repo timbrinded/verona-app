@@ -1,6 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "playwright";
 
@@ -37,16 +38,36 @@ async function waitForServer(url: string): Promise<void> {
 
 async function stopServer(server: ChildProcessWithoutNullStreams): Promise<void> {
   if (server.exitCode !== null) return;
-  server.kill("SIGTERM");
-  await Promise.race([once(server, "exit"), delay(5_000).then(() => server.kill("SIGKILL"))]);
+  if (process.platform === "win32" || !server.pid) {
+    server.kill("SIGTERM");
+    await Promise.race([once(server, "exit"), delay(5_000).then(() => server.kill("SIGKILL"))]);
+    return;
+  }
+
+  try {
+    process.kill(-server.pid, "SIGTERM");
+  } catch {
+    server.kill("SIGTERM");
+  }
+  await Promise.race([
+    once(server, "exit"),
+    delay(5_000).then(() => {
+      try {
+        process.kill(-server.pid!, "SIGKILL");
+      } catch {
+        server.kill("SIGKILL");
+      }
+    }),
+  ]);
 }
 
 async function main(): Promise<void> {
   const port = Number(process.env.PLAYWRIGHT_PORT) || (await freePort());
   const baseUrl = `http://127.0.0.1:${port}`;
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const server = spawn(npx, ["next", "start", "-p", String(port), "-H", "127.0.0.1"], {
+  const nextBin = join(process.cwd(), "node_modules", ".bin", process.platform === "win32" ? "next.cmd" : "next");
+  const server = spawn(nextBin, ["start", "-p", String(port), "-H", "127.0.0.1"], {
     cwd: process.cwd(),
+    detached: process.platform !== "win32",
     env: {
       ...process.env,
       DATABASE_URL: process.env.DATABASE_URL || "file:./data/verona.db",
