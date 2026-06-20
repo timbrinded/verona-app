@@ -1,14 +1,20 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
+import nextPwa from "next-pwa";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = dirname(fileURLToPath(import.meta.url));
+
+const withPWA = nextPwa({
+  dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === "development",
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
-      handler: 'CacheFirst',
+      handler: "CacheFirst",
       options: {
-        cacheName: 'mapbox-tiles',
+        cacheName: "mapbox-tiles",
         expiration: {
           maxEntries: 500,
           maxAgeSeconds: 60 * 60 * 24 * 30,
@@ -17,16 +23,20 @@ const withPWA = require('next-pwa')({
     },
     {
       urlPattern: /\/api\/places(?:\?.*)?$/,
-      handler: 'NetworkOnly',
+      handler: "NetworkFirst",
       options: {
-        cacheName: 'places-api',
+        cacheName: "places-api",
+        networkTimeoutSeconds: 3,
+        expiration: {
+          maxAgeSeconds: 60 * 10,
+        },
       },
     },
     {
       urlPattern: /\/data\/places\.json$/,
-      handler: 'NetworkFirst',
+      handler: "NetworkFirst",
       options: {
-        cacheName: 'places-data',
+        cacheName: "places-data",
         networkTimeoutSeconds: 3,
         expiration: {
           maxAgeSeconds: 60 * 10,
@@ -38,10 +48,11 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: repoRoot,
   images: {
     unoptimized: true,
   },
   turbopack: {},
 };
 
-module.exports = withPWA(nextConfig);
+export default withPWA(nextConfig);

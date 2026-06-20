@@ -10,6 +10,13 @@ out/
 public/sw.js
 public/workbox-*.js
 
+# local SQLite and enrichment artifacts
+data/*.db
+data/*.sqlite
+data/*.db-*
+data/*.sqlite-*
+data/enrichment/*.csv
+
 # env files
 .env*.local
 

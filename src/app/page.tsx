@@ -1,144 +1,160 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import type { Place, PlaceLink } from "@/lib/place-types";
 
-// Types
-interface Place {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  reviews: number;
-  price: string;
-  distance: number;
-  vibe: number;
-  confidence: number;
-  address: string;
-  phone: string;
-  website: string;
-  googleMaps: string;
-  booking: string;
-  notes: string;
-  lat?: number;
-  lng?: number;
-  isHomeBase?: boolean;
-}
-
-// Category colors
 const CATEGORY_COLORS: Record<string, string> = {
-  'Sights': '#8B5CF6',
-  'Viewpoint': '#EC4899',
-  'Fine Dining': '#F59E0B',
-  'Osteria': '#10B981',
-  'Trattoria': '#34D399',
-  'Wine Bar': '#7C3AED',
-  'Cocktail Bar': '#F472B6',
-  'Aperitivo': '#FB923C',
-  'Pub': '#60A5FA',
-  'Gelato': '#A78BFA',
-  'Accommodation': '#EF4444',
+  Sights: "#8B5CF6",
+  Viewpoint: "#EC4899",
+  "Fine Dining": "#F59E0B",
+  Osteria: "#10B981",
+  Trattoria: "#34D399",
+  "Wine Bar": "#7C3AED",
+  "Cocktail Bar": "#F472B6",
+  Aperitivo: "#FB923C",
+  Pub: "#60A5FA",
+  Gelato: "#A78BFA",
+  Accommodation: "#EF4444",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  'Sights': '🏛️',
-  'Viewpoint': '👁️',
-  'Fine Dining': '⭐',
-  'Osteria': '🍝',
-  'Trattoria': '🍽️',
-  'Wine Bar': '🍷',
-  'Cocktail Bar': '🍸',
-  'Aperitivo': '🥂',
-  'Pub': '🍺',
-  'Gelato': '🍦',
-  'Accommodation': '🏠',
+  Sights: "🏛️",
+  Viewpoint: "👁️",
+  "Fine Dining": "⭐",
+  Osteria: "🍝",
+  Trattoria: "🍽️",
+  "Wine Bar": "🍷",
+  "Cocktail Bar": "🍸",
+  Aperitivo: "🥂",
+  Pub: "🍺",
+  Gelato: "🍦",
+  Accommodation: "🏠",
 };
 
-// Normalize categories (merge Craft Beer into Pub)
-const normalizeCategory = (cat: string): string => {
-  if (cat === 'Craft Beer') return 'Pub';
-  return cat;
-};
-
-// Verona center coordinates
 const VERONA_CENTER: [number, number] = [10.9916, 45.4384];
+const MAPBOX_TOKEN =
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+  "pk.eyJ1IjoidmVyb25hLWFwcCIsImEiOiJjbTVvZ2RxZHEwMDFqMmxxc2RyeWJ3ZHJjIn0.placeholder";
 
-// Mapbox token (public, restricted to domains)
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoidmVyb25hLWFwcCIsImEiOiJjbTVvZ2RxZHEwMDFqMmxxc2RyeWJ3ZHJjIn0.placeholder';
+interface GeolocateEvent {
+  coords?: {
+    longitude?: number;
+    latitude?: number;
+  };
+}
+
+function normalizeCategory(category: string): string {
+  return category === "Craft Beer" ? "Pub" : category;
+}
+
+function primaryLinks(place: Place): PlaceLink[] {
+  const existing = new Set<string>();
+  const links: PlaceLink[] = [];
+
+  const add = (type: string, label: string, url: string) => {
+    if (!url || existing.has(`${type}:${url}`)) return;
+    existing.add(`${type}:${url}`);
+    links.push({ type, label, url, source: "api", confidence: 1, retrievedAt: null });
+  };
+
+  add("google_maps", "Directions", place.googleMaps);
+  add("booking", "Book", place.booking);
+  add("website", "Website", place.website);
+
+  for (const link of place.links) {
+    if (["google_maps", "booking", "website", "menu", "airbnb"].includes(link.type)) {
+      add(link.type, link.label || link.type.replaceAll("_", " "), link.url);
+    }
+  }
+
+  return links.slice(0, 4);
+}
+
+function linkClass(type: string): string {
+  if (type === "google_maps") return "bg-blue-600";
+  if (type === "booking" || type === "airbnb") return "bg-green-600";
+  if (type === "menu") return "bg-amber-600";
+  return "bg-gray-700";
+}
 
 export default function Home() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
-  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isOffline, setIsOffline] = useState(false);
 
-  // Load places data from the live API, with the checked-in JSON as fallback.
   useEffect(() => {
     const loadPlaces = async () => {
-      const fallbackUrl = '/data/places.json?v=20260518-vino-liqouri';
-      let response = await fetch('/api/places?ts=' + Date.now(), { cache: 'no-store' });
+      let response = await fetch(`/api/places?ts=${Date.now()}`, { cache: "no-store" });
 
       if (!response.ok) {
-        response = await fetch(fallbackUrl, { cache: 'no-store' });
+        response = await fetch("/data/places.json", { cache: "no-store" });
+        setIsOffline(true);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as Place[];
+      const normalized = data.map((place) => ({
+        ...place,
+        category: normalizeCategory(place.category),
+        links: place.links ?? [],
+        sources: place.sources ?? [],
+        details: {
+          openingHours: place.details?.openingHours ?? [],
+          bestTimeToVisit: place.details?.bestTimeToVisit ?? "",
+          reservationGuidance: place.details?.reservationGuidance ?? "",
+          dietaryTags: place.details?.dietaryTags ?? [],
+          accessibilityNotes: place.details?.accessibilityNotes ?? "",
+          paymentNotes: place.details?.paymentNotes ?? "",
+          photoUrls: place.details?.photoUrls ?? [],
+          menuHighlights: place.details?.menuHighlights ?? "",
+          visitTips: place.details?.visitTips ?? "",
+          bookingNotes: place.details?.bookingNotes ?? "",
+          socialLinks: place.details?.socialLinks ?? {},
+          updatedAt: place.details?.updatedAt ?? null,
+        },
+      }));
 
-      // Parse coordinates from Google Maps URLs and normalize categories
-      const placesWithCoords = data.map((p: Place) => {
-        const normalized = { ...p, category: normalizeCategory(p.category) };
-        if (normalized.googleMaps) {
-          const match = normalized.googleMaps.match(/@([\d.-]+),([\d.-]+)/);
-          if (match) {
-            return { ...normalized, lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-          }
-        }
-        return normalized;
-      });
-      setPlaces(placesWithCoords);
-      setFilteredPlaces(placesWithCoords);
+      setPlaces(normalized);
     };
 
-    loadPlaces()
-      .catch(() => {
-        // Try loading from cache/IndexedDB for offline
-        setIsOffline(true);
-      });
+    loadPlaces().catch(() => {
+      setIsOffline(true);
+    });
   }, []);
 
-  // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: "mapbox://styles/mapbox/streets-v12",
       center: VERONA_CENTER,
       zoom: 14,
     });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-    
-    // Add geolocation control
+    map.current.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+
     const geolocate = new mapboxgl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
       showUserHeading: true,
     });
-    map.current.addControl(geolocate, 'bottom-right');
-    
-    geolocate.on('geolocate', (e: any) => {
-      setUserLocation([e.coords.longitude, e.coords.latitude]);
+    map.current.addControl(geolocate, "bottom-right");
+
+    geolocate.on("geolocate", (event: unknown) => {
+      const coords = (event as GeolocateEvent).coords;
+      if (typeof coords?.longitude === "number" && typeof coords.latitude === "number") {
+        setUserLocation([coords.longitude, coords.latitude]);
+      }
     });
 
     return () => {
@@ -147,24 +163,41 @@ export default function Home() {
     };
   }, []);
 
-  // Update markers when filtered places change
+  const filteredPlaces = useMemo(() => {
+    let filtered = places;
+
+    if (activeCategory) {
+      filtered = filtered.filter((place) => place.category === activeCategory);
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (place) =>
+          place.name.toLowerCase().includes(query) ||
+          place.category.toLowerCase().includes(query) ||
+          place.address.toLowerCase().includes(query) ||
+          place.notes.toLowerCase().includes(query),
+      );
+    }
+
+    return filtered;
+  }, [places, activeCategory, searchQuery]);
+
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove existing markers (except home base)
-    document.querySelectorAll('.place-marker:not(.home-base-marker)').forEach(el => el.remove());
+    document.querySelectorAll(".place-marker:not(.home-base-marker)").forEach((element) => element.remove());
 
-    // Add markers for filtered places
-    filteredPlaces.forEach(place => {
-      if (!place.lat || !place.lng) return;
-      if (place.isHomeBase) return; // Home base is added separately
+    filteredPlaces.forEach((place) => {
+      if (!place.lat || !place.lng || place.isHomeBase) return;
 
-      const el = document.createElement('div');
-      el.className = 'place-marker';
-      el.style.cssText = `
+      const element = document.createElement("div");
+      element.className = "place-marker";
+      element.style.cssText = `
         width: 32px;
         height: 32px;
-        background: ${CATEGORY_COLORS[place.category] || '#6B7280'};
+        background: ${CATEGORY_COLORS[place.category] || "#6B7280"};
         border: 2px solid white;
         border-radius: 50%;
         cursor: pointer;
@@ -174,29 +207,24 @@ export default function Home() {
         font-size: 16px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       `;
-      el.innerHTML = CATEGORY_ICONS[place.category] || '📍';
-      el.onclick = () => setSelectedPlace(place);
+      element.innerHTML = CATEGORY_ICONS[place.category] || "📍";
+      element.onclick = () => setSelectedPlace(place);
 
-      new mapboxgl.Marker(el)
-        .setLngLat([place.lng, place.lat])
-        .addTo(map.current!);
+      new mapboxgl.Marker(element).setLngLat([place.lng, place.lat]).addTo(map.current!);
     });
   }, [filteredPlaces]);
 
-  // Always show home base marker (regardless of filters)
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove any existing home base marker
-    document.querySelectorAll('.home-base-marker').forEach(el => el.remove());
+    document.querySelectorAll(".home-base-marker").forEach((element) => element.remove());
 
-    // Find the home base
-    const homeBase = places.find(p => p.isHomeBase);
-    if (!homeBase || !homeBase.lat || !homeBase.lng) return;
+    const homeBase = places.find((place) => place.isHomeBase);
+    if (!homeBase?.lat || !homeBase.lng) return;
 
-    const el = document.createElement('div');
-    el.className = 'place-marker home-base-marker';
-    el.style.cssText = `
+    const element = document.createElement("div");
+    element.className = "place-marker home-base-marker";
+    element.style.cssText = `
       width: 44px;
       height: 44px;
       background: linear-gradient(135deg, #EF4444, #DC2626);
@@ -209,189 +237,230 @@ export default function Home() {
       font-size: 22px;
       box-shadow: 0 4px 12px rgba(239,68,68,0.5);
     `;
-    el.innerHTML = '🏠';
-    el.onclick = () => setSelectedPlace(homeBase);
+    element.innerHTML = "🏠";
+    element.onclick = () => setSelectedPlace(homeBase);
 
-    new mapboxgl.Marker(el)
-      .setLngLat([homeBase.lng, homeBase.lat])
-      .addTo(map.current!);
+    new mapboxgl.Marker(element).setLngLat([homeBase.lng, homeBase.lat]).addTo(map.current);
   }, [places]);
 
-  // Filter places
-  useEffect(() => {
-    let filtered = places;
+  const getDistanceFromUser = useCallback(
+    (place: Place) => {
+      if (!userLocation || !place.lat || !place.lng) return null;
+      const radiusKm = 6371;
+      const dLat = ((place.lat - userLocation[1]) * Math.PI) / 180;
+      const dLon = ((place.lng - userLocation[0]) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((userLocation[1] * Math.PI) / 180) *
+          Math.cos((place.lat * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return radiusKm * c;
+    },
+    [userLocation],
+  );
 
-    // Filter by active category (null = show all)
-    if (activeCategory) {
-      filtered = filtered.filter(p => p.category === activeCategory);
+  const allCategories = useMemo(
+    () => [...new Set(places.map((place) => place.category).filter(Boolean))].sort(),
+    [places],
+  );
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const place of places) {
+      counts.set(place.category, (counts.get(place.category) ?? 0) + 1);
     }
+    return counts;
+  }, [places]);
 
-    // Filter by search query
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.address.toLowerCase().includes(q)
-      );
-    }
-
-    setFilteredPlaces(filtered);
-  }, [places, activeCategory, searchQuery]);
-
-  // Calculate distance from user
-  const getDistanceFromUser = useCallback((place: Place) => {
-    if (!userLocation || !place.lat || !place.lng) return null;
-    const R = 6371;
-    const dLat = (place.lat - userLocation[1]) * Math.PI / 180;
-    const dLon = (place.lng - userLocation[0]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(userLocation[1] * Math.PI / 180) * Math.cos(place.lat * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }, [userLocation]);
-
-  // Toggle category filter (single-select: click to select, click again to deselect)
-  const toggleCategory = (cat: string) => {
-    setActiveCategory(activeCategory === cat ? null : cat);
-  };
-
-  // Get all unique categories
-  const allCategories = [...new Set(places.map(p => p.category).filter(Boolean))].sort();
+  const selectedLinks = selectedPlace ? primaryLinks(selectedPlace) : [];
 
   return (
     <main className="h-screen w-screen relative overflow-hidden isolate">
-      {/* Map */}
       <div ref={mapContainer} className="absolute inset-0 z-0" />
 
-      {/* Search bar */}
       <div className="absolute top-4 left-4 right-4 z-40 flex gap-2">
         <input
           type="text"
           placeholder="Search places..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(event) => setSearchQuery(event.target.value)}
           className="flex-1 px-4 py-2 rounded-full bg-white shadow-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
         <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`px-4 py-2 rounded-full shadow-lg ${showFilters ? 'bg-purple-600 text-white' : 'bg-white text-gray-800'}`}
+          onClick={() => setShowFilters((value) => !value)}
+          className={`px-4 py-2 rounded-full shadow-lg ${showFilters ? "bg-purple-600 text-white" : "bg-white text-gray-800"}`}
+          aria-label="Toggle filters"
         >
           ⚙️
         </button>
       </div>
 
-      {/* Offline indicator */}
       {isOffline && (
         <div className="absolute top-16 left-4 right-4 z-40 bg-yellow-500 text-white px-4 py-2 rounded-lg text-center text-sm">
           📴 Offline mode - showing cached data
         </div>
       )}
 
-      {/* Filter panel */}
       {showFilters && (
         <div className="absolute top-20 left-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 max-h-60 overflow-y-auto">
           <div className="text-sm font-semibold text-gray-600 mb-2">Categories</div>
           <div className="flex flex-wrap gap-2">
-            {allCategories.map(cat => (
+            {allCategories.map((category) => (
               <button
-                key={cat}
-                onClick={() => toggleCategory(cat)}
+                key={category}
+                onClick={() => setActiveCategory(activeCategory === category ? null : category)}
                 className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-all ${
-                  activeCategory === cat
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-600'
+                  activeCategory === category ? "bg-purple-600 text-white" : "bg-gray-200 text-gray-600"
                 }`}
               >
-                <span>{CATEGORY_ICONS[cat] || '📍'}</span>
-                <span>{cat}</span>
-                <span className="opacity-60">({places.filter(p => p.category === cat).length})</span>
+                <span>{CATEGORY_ICONS[category] || "📍"}</span>
+                <span>{category}</span>
+                <span className="opacity-60">({categoryCounts.get(category) ?? 0})</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Place count */}
       <div className="absolute bottom-24 left-4 z-40 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm text-gray-600 shadow">
         {filteredPlaces.length} places
       </div>
 
-      {/* Selected place card */}
       {selectedPlace && (
-        <div className="absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-2xl shadow-2xl p-4 pb-8 animate-slide-up">
+        <div className="absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-2xl shadow-2xl p-4 pb-8 max-h-[72vh] overflow-y-auto animate-slide-up">
           <button
             onClick={() => setSelectedPlace(null)}
             className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"
+            aria-label="Close place"
           >
             ✕
           </button>
-          
-          <div className="flex items-start gap-3">
+
+          <div className="flex items-start gap-3 pr-8">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-              style={{ background: CATEGORY_COLORS[selectedPlace.category] || '#6B7280' }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+              style={{ background: CATEGORY_COLORS[selectedPlace.category] || "#6B7280" }}
             >
-              {CATEGORY_ICONS[selectedPlace.category] || '📍'}
+              {CATEGORY_ICONS[selectedPlace.category] || "📍"}
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-gray-900">{selectedPlace.name}</h2>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-bold text-gray-900 break-words">{selectedPlace.name}</h2>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
                 <span>{selectedPlace.category}</span>
                 {selectedPlace.price && <span>• {selectedPlace.price}</span>}
                 {selectedPlace.rating > 0 && <span>• {selectedPlace.rating}⭐</span>}
+                {selectedPlace.reviews > 0 && <span>• {selectedPlace.reviews} reviews</span>}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 text-sm text-gray-600">
-            {selectedPlace.address && <p className="mb-1">📍 {selectedPlace.address}</p>}
+          <div className="mt-3 space-y-2 text-sm text-gray-600">
+            {selectedPlace.address && <p>📍 {selectedPlace.address}</p>}
             {userLocation && selectedPlace.lat && (
-              <p className="mb-1">🚶 {(getDistanceFromUser(selectedPlace)! * 1000).toFixed(0)}m away</p>
+              <p>🚶 {(getDistanceFromUser(selectedPlace)! * 1000).toFixed(0)}m away</p>
             )}
-            {selectedPlace.notes && <p className="text-gray-500">{selectedPlace.notes}</p>}
+            {(selectedPlace.description || selectedPlace.notes) && (
+              <p className="text-gray-700">{selectedPlace.description || selectedPlace.notes}</p>
+            )}
+            {selectedPlace.description && selectedPlace.notes && <p className="text-gray-500">{selectedPlace.notes}</p>}
           </div>
 
-          <div className="mt-4 flex gap-2">
-            {selectedPlace.googleMaps && (
-              <a
-                href={selectedPlace.googleMaps}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg text-center font-medium"
-              >
-                🗺️ Directions
-              </a>
-            )}
-            {selectedPlace.booking && (
-              <a
-                href={selectedPlace.booking}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 px-4 bg-green-600 text-white rounded-lg text-center font-medium"
-              >
-                📅 Book
-              </a>
-            )}
-            {selectedPlace.website && !selectedPlace.booking && (
-              <a
-                href={selectedPlace.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 px-4 bg-gray-600 text-white rounded-lg text-center font-medium"
-              >
-                🌐 Website
-              </a>
-            )}
-          </div>
+          {(selectedPlace.details.bestTimeToVisit ||
+            selectedPlace.details.reservationGuidance ||
+            selectedPlace.details.visitTips ||
+            selectedPlace.details.menuHighlights ||
+            selectedPlace.details.openingHours.length > 0) && (
+            <div className="mt-4 grid gap-2 text-sm text-gray-700">
+              {selectedPlace.details.bestTimeToVisit && (
+                <p>
+                  <span className="font-semibold">Best time:</span> {selectedPlace.details.bestTimeToVisit}
+                </p>
+              )}
+              {selectedPlace.details.reservationGuidance && (
+                <p>
+                  <span className="font-semibold">Booking:</span> {selectedPlace.details.reservationGuidance}
+                </p>
+              )}
+              {selectedPlace.details.visitTips && (
+                <p>
+                  <span className="font-semibold">Tip:</span> {selectedPlace.details.visitTips}
+                </p>
+              )}
+              {selectedPlace.details.menuHighlights && (
+                <p>
+                  <span className="font-semibold">Menu:</span> {selectedPlace.details.menuHighlights}
+                </p>
+              )}
+              {selectedPlace.details.openingHours.length > 0 && (
+                <p>
+                  <span className="font-semibold">Hours:</span> {selectedPlace.details.openingHours.slice(0, 2).join(" · ")}
+                </p>
+              )}
+            </div>
+          )}
+
+          {(selectedPlace.details.dietaryTags.length > 0 ||
+            selectedPlace.details.accessibilityNotes ||
+            selectedPlace.details.paymentNotes) && (
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-700">
+              {selectedPlace.details.dietaryTags.map((tag) => (
+                <span key={tag} className="px-2 py-1 rounded-full bg-gray-100">
+                  {tag}
+                </span>
+              ))}
+              {selectedPlace.details.accessibilityNotes && (
+                <span className="px-2 py-1 rounded-full bg-gray-100">{selectedPlace.details.accessibilityNotes}</span>
+              )}
+              {selectedPlace.details.paymentNotes && (
+                <span className="px-2 py-1 rounded-full bg-gray-100">{selectedPlace.details.paymentNotes}</span>
+              )}
+            </div>
+          )}
+
+          {selectedLinks.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {selectedLinks.map((link) => (
+                <a
+                  key={`${link.type}:${link.url}`}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`py-2 px-3 text-white rounded-lg text-center font-medium text-sm ${linkClass(link.type)}`}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {selectedPlace.sources.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              {selectedPlace.sources.slice(0, 3).map((source) => (
+                <a
+                  key={`${source.fieldName}:${source.sourceUrl}`}
+                  href={source.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 underline underline-offset-2"
+                >
+                  {source.sourceTitle || source.fieldName}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       <style jsx>{`
         @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
         .animate-slide-up {
           animation: slide-up 0.3s ease-out;

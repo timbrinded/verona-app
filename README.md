@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Verona Guide
 
-## Getting Started
+Mobile-first Verona travel guide backed by SQLite-compatible Turso/libSQL.
 
-First, run the development server:
+## App
+
+- Next.js app with a full-screen Mapbox map.
+- `/api/places` reads active places from SQLite.
+- The browser fetches places once on load; PWA caching keeps the API/static export available for travel use.
+- `data/places.seed.json` is the editable seed source.
+- `public/data/places.json` is a generated static fallback exported from SQLite.
+
+## Environment
+
+Local development defaults to `file:./data/verona.db` when no database variables are set.
+
+For production on Vercel, configure:
+
+```bash
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your_turso_auth_token
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
+```
+
+For manual enrichment:
+
+```bash
+PARALLEL_API_KEY=your_parallel_api_key
+```
+
+## Data Workflow
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Create/update the local schema, seed from `data/places.seed.json`, and export the static fallback:
+
+```bash
+npm run db:setup
+```
+
+Run the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+After editing `data/places.seed.json`, run:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run db:seed
+npm run db:export
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Enrichment
 
-## Learn More
+Prepare rows with missing or stale enriched data:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run enrich:prepare
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Start a Parallel enrichment job:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run enrich:run -- data/enrichment/parallel-input-YYYY-MM-DD.csv
+```
 
-## Deploy on Vercel
+When the Parallel output CSV is ready, import it and regenerate the fallback JSON:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run enrich:import -- data/enrichment/parallel-input-YYYY-MM-DD.output.csv
+npm run db:export
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The importer fills missing core fields, adds rich travel details, stores citations, and preserves protected seed/manual fields such as the home-base flag, notes, and pinned coordinates.
+
+## Checks
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
