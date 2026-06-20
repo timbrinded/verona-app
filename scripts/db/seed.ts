@@ -1,8 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import type { InStatement } from "@libsql/client";
 import { libsql } from "../../src/db/client";
 
-interface SeedPlace {
+export interface SeedPlace {
   id: string;
   name: string;
   category: string;
@@ -36,6 +38,80 @@ function text(value: unknown): string {
 
 function number(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function optionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function validateString(record: Record<string, unknown>, key: string, row: number): string {
+  const value = text(record[key]);
+  if (!value) {
+    throw new Error(`Invalid seed row ${row}: missing ${key}`);
+  }
+  return value;
+}
+
+function validateOptionalString(record: Record<string, unknown>, key: string): string | undefined {
+  const value = text(record[key]);
+  return value || undefined;
+}
+
+function validateOptionalNumber(record: Record<string, unknown>, key: string): number | undefined {
+  const value = record[key];
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`Invalid seed field ${key}: expected a number`);
+  }
+  return value;
+}
+
+function validateSeedPlace(value: unknown, index: number): SeedPlace {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Invalid seed row ${index}: expected an object`);
+  }
+
+  const record = value as Record<string, unknown>;
+  return {
+    id: validateString(record, "id", index),
+    name: validateString(record, "name", index),
+    category: validateString(record, "category", index),
+    rating: validateOptionalNumber(record, "rating"),
+    reviews: validateOptionalNumber(record, "reviews"),
+    price: validateOptionalString(record, "price"),
+    distance: validateOptionalNumber(record, "distance"),
+    vibe: validateOptionalNumber(record, "vibe"),
+    confidence: validateOptionalNumber(record, "confidence"),
+    address: validateOptionalString(record, "address"),
+    phone: validateOptionalString(record, "phone"),
+    website: validateOptionalString(record, "website"),
+    googleMaps: validateOptionalString(record, "googleMaps"),
+    booking: validateOptionalString(record, "booking"),
+    notes: validateOptionalString(record, "notes"),
+    lat: validateOptionalNumber(record, "lat"),
+    lng: validateOptionalNumber(record, "lng"),
+    isHomeBase: optionalBoolean(record.isHomeBase),
+  };
+}
+
+export function parseSeedPlaces(value: unknown): SeedPlace[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Invalid seed file: expected an array");
+  }
+  if (value.length === 0) {
+    throw new Error("Invalid seed file: expected at least one place");
+  }
+
+  const places = value.map((place, index) => validateSeedPlace(place, index + 1));
+  const ids = new Set<string>();
+  for (const place of places) {
+    if (ids.has(place.id)) {
+      throw new Error(`Invalid seed file: duplicate id ${place.id}`);
+    }
+    ids.add(place.id);
+  }
+
+  return places;
 }
 
 function normalizeCategory(category: string): string {
@@ -114,17 +190,18 @@ async function seed(): Promise<void> {
   await libsql.execute("PRAGMA foreign_keys = ON");
 
   const seedPath = join(process.cwd(), "data", "places.seed.json");
-  const places = JSON.parse(await readFile(seedPath, "utf8")) as SeedPlace[];
+  const places = parseSeedPlaces(JSON.parse(await readFile(seedPath, "utf8")));
   const slugs = buildSlugs(places);
   const activeIds = new Set<string>();
   let seededLinks = 0;
+  const statements: InStatement[] = [];
 
   for (const place of places) {
     activeIds.add(place.id);
     const sourceCategory = text(place.category);
     const category = normalizeCategory(sourceCategory);
 
-    await libsql.execute({
+    statements.push({
       sql: `
         INSERT INTO places (
           id, slug, name, category, source_category, rating, reviews, price, distance, vibe,
@@ -182,7 +259,7 @@ async function seed(): Promise<void> {
       ],
     });
 
-    await libsql.execute({
+    statements.push({
       sql: `
         INSERT OR IGNORE INTO place_details (place_id)
         VALUES (?)
@@ -190,14 +267,14 @@ async function seed(): Promise<void> {
       args: [place.id],
     });
 
-    await libsql.execute({
+    statements.push({
       sql: "DELETE FROM place_links WHERE place_id = ? AND source = 'seed'",
       args: [place.id],
     });
 
     for (const link of seedLinks(place)) {
       seededLinks += 1;
-      await libsql.execute({
+      statements.push({
         sql: `
           INSERT OR IGNORE INTO place_links (place_id, type, label, url, source, confidence)
           VALUES (?, ?, ?, ?, 'seed', 1)
@@ -209,16 +286,20 @@ async function seed(): Promise<void> {
 
   if (activeIds.size > 0) {
     const placeholders = Array.from(activeIds, () => "?").join(", ");
-    await libsql.execute({
+    statements.push({
       sql: `UPDATE places SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id NOT IN (${placeholders})`,
       args: Array.from(activeIds),
     });
   }
 
+  await libsql.batch(statements, "write");
+
   console.log(`Seeded ${places.length} active places and ${seededLinks} seed links`);
 }
 
-seed().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  seed().catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

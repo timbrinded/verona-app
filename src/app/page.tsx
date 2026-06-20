@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Place, PlaceLink } from "@/lib/place-types";
+import { parsePlacesPayload } from "@/lib/place-validation";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Sights: "#8B5CF6",
@@ -82,6 +83,8 @@ function linkClass(type: string): string {
 export default function Home() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const placeMarkers = useRef<mapboxgl.Marker[]>([]);
+  const homeBaseMarker = useRef<mapboxgl.Marker | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -92,33 +95,17 @@ export default function Home() {
 
   useEffect(() => {
     const loadPlaces = async () => {
-      let response = await fetch(`/api/places?ts=${Date.now()}`, { cache: "no-store" });
+      let response = await fetch("/api/places");
 
       if (!response.ok) {
-        response = await fetch("/data/places.json", { cache: "no-store" });
+        response = await fetch("/data/places.json");
         setIsOffline(true);
       }
 
-      const data = (await response.json()) as Place[];
+      const data = parsePlacesPayload(await response.json());
       const normalized = data.map((place) => ({
         ...place,
         category: normalizeCategory(place.category),
-        links: place.links ?? [],
-        sources: place.sources ?? [],
-        details: {
-          openingHours: place.details?.openingHours ?? [],
-          bestTimeToVisit: place.details?.bestTimeToVisit ?? "",
-          reservationGuidance: place.details?.reservationGuidance ?? "",
-          dietaryTags: place.details?.dietaryTags ?? [],
-          accessibilityNotes: place.details?.accessibilityNotes ?? "",
-          paymentNotes: place.details?.paymentNotes ?? "",
-          photoUrls: place.details?.photoUrls ?? [],
-          menuHighlights: place.details?.menuHighlights ?? "",
-          visitTips: place.details?.visitTips ?? "",
-          bookingNotes: place.details?.bookingNotes ?? "",
-          socialLinks: place.details?.socialLinks ?? {},
-          updatedAt: place.details?.updatedAt ?? null,
-        },
       }));
 
       setPlaces(normalized);
@@ -187,7 +174,8 @@ export default function Home() {
   useEffect(() => {
     if (!map.current) return;
 
-    document.querySelectorAll(".place-marker:not(.home-base-marker)").forEach((element) => element.remove());
+    placeMarkers.current.forEach((marker) => marker.remove());
+    placeMarkers.current = [];
 
     filteredPlaces.forEach((place) => {
       if (!place.lat || !place.lng || place.isHomeBase) return;
@@ -210,14 +198,21 @@ export default function Home() {
       element.innerHTML = CATEGORY_ICONS[place.category] || "📍";
       element.onclick = () => setSelectedPlace(place);
 
-      new mapboxgl.Marker(element).setLngLat([place.lng, place.lat]).addTo(map.current!);
+      const marker = new mapboxgl.Marker(element).setLngLat([place.lng, place.lat]).addTo(map.current!);
+      placeMarkers.current.push(marker);
     });
+
+    return () => {
+      placeMarkers.current.forEach((marker) => marker.remove());
+      placeMarkers.current = [];
+    };
   }, [filteredPlaces]);
 
   useEffect(() => {
     if (!map.current) return;
 
-    document.querySelectorAll(".home-base-marker").forEach((element) => element.remove());
+    homeBaseMarker.current?.remove();
+    homeBaseMarker.current = null;
 
     const homeBase = places.find((place) => place.isHomeBase);
     if (!homeBase?.lat || !homeBase.lng) return;
@@ -240,7 +235,12 @@ export default function Home() {
     element.innerHTML = "🏠";
     element.onclick = () => setSelectedPlace(homeBase);
 
-    new mapboxgl.Marker(element).setLngLat([homeBase.lng, homeBase.lat]).addTo(map.current);
+    homeBaseMarker.current = new mapboxgl.Marker(element).setLngLat([homeBase.lng, homeBase.lat]).addTo(map.current);
+
+    return () => {
+      homeBaseMarker.current?.remove();
+      homeBaseMarker.current = null;
+    };
   }, [places]);
 
   const getDistanceFromUser = useCallback(

@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
+import { pathToFileURL } from "node:url";
+import type { InStatement } from "@libsql/client";
 import { libsql } from "../../src/db/client";
 import { parseCsv, type CsvRow } from "./csv";
 
@@ -52,7 +54,7 @@ function socialLinks(row: CsvRow): Record<string, string> {
   );
 }
 
-function citations(value: string): Citation[] {
+export function citations(value: string): Citation[] {
   if (!value) return [];
 
   try {
@@ -89,10 +91,10 @@ function citations(value: string): Citation[] {
   }));
 }
 
-async function upsertLink(placeId: string, type: string, label: string, url: string): Promise<void> {
+function addLinkStatement(statements: InStatement[], placeId: string, type: string, label: string, url: string): void {
   if (!url) return;
 
-  await libsql.execute({
+  statements.push({
     sql: `
       INSERT OR IGNORE INTO place_links (place_id, type, label, url, source, confidence, retrieved_at)
       VALUES (?, ?, ?, ?, 'parallel', 0.8, CURRENT_TIMESTAMP)
@@ -101,15 +103,45 @@ async function upsertLink(placeId: string, type: string, label: string, url: str
   });
 }
 
-async function importRow(row: CsvRow, runId: string): Promise<boolean> {
+function validatePlaceId(row: CsvRow, rowNumber: number): string {
   const placeId = get(row, ["id", "place_id"]);
-  if (!placeId) return false;
+  if (!placeId) {
+    throw new Error(`Invalid enrichment row ${rowNumber}: missing id`);
+  }
+  return placeId;
+}
 
-  const existing = await libsql.execute({
-    sql: "SELECT id FROM places WHERE id = ?",
-    args: [placeId],
+export function validateEnrichmentRows(rows: CsvRow[]): string[] {
+  if (rows.length === 0) {
+    throw new Error("Invalid enrichment CSV: expected at least one row");
+  }
+
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  rows.forEach((row, index) => {
+    const placeId = validatePlaceId(row, index + 2);
+    if (seen.has(placeId)) {
+      throw new Error(`Invalid enrichment CSV: duplicate id ${placeId}`);
+    }
+    seen.add(placeId);
+    ids.push(placeId);
   });
-  if (existing.rows.length === 0) return false;
+
+  return ids;
+}
+
+async function existingPlaceIds(ids: string[]): Promise<Set<string>> {
+  const placeholders = ids.map(() => "?").join(", ");
+  const result = await libsql.execute({
+    sql: `SELECT id FROM places WHERE id IN (${placeholders})`,
+    args: ids,
+  });
+
+  return new Set(result.rows.map((row) => String(row.id)));
+}
+
+function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: string): void {
+  const placeId = get(row, ["id", "place_id"]);
 
   const phone = get(row, ["phone", "phone_number"]);
   const website = get(row, ["website", "official_website"]);
@@ -123,7 +155,7 @@ async function importRow(row: CsvRow, runId: string): Promise<boolean> {
   const description = get(row, ["description", "summary"]);
   const confidence = numberValue(get(row, ["confidence"]));
 
-  await libsql.execute({
+  statements.push({
     sql: `
       UPDATE places SET
         phone = CASE WHEN phone = '' AND ? != '' THEN ? ELSE phone END,
@@ -165,7 +197,7 @@ async function importRow(row: CsvRow, runId: string): Promise<boolean> {
     ],
   });
 
-  await libsql.execute({
+  statements.push({
     sql: `
       INSERT INTO place_details (
         place_id, opening_hours, best_time_to_visit, reservation_guidance, dietary_tags,
@@ -203,22 +235,21 @@ async function importRow(row: CsvRow, runId: string): Promise<boolean> {
     ],
   });
 
-  await upsertLink(placeId, "website", "Website", website);
-  await upsertLink(placeId, "google_maps", "Google Maps", googleMaps);
-  await upsertLink(placeId, "booking", "Book", booking);
-  await upsertLink(placeId, "menu", "Menu", menuUrl);
+  addLinkStatement(statements, placeId, "website", "Website", website);
+  addLinkStatement(statements, placeId, "google_maps", "Google Maps", googleMaps);
+  addLinkStatement(statements, placeId, "booking", "Book", booking);
+  addLinkStatement(statements, placeId, "menu", "Menu", menuUrl);
 
   for (const [network, url] of Object.entries(socialLinks(row))) {
-    await upsertLink(placeId, `social_${network}`, network[0].toUpperCase() + network.slice(1), url);
+    addLinkStatement(statements, placeId, `social_${network}`, network[0].toUpperCase() + network.slice(1), url);
   }
 
-  await libsql.execute({
-    sql: "DELETE FROM place_sources WHERE place_id = ?",
-    args: [placeId],
-  });
-
   for (const citation of citations(get(row, ["citations", "sources"]))) {
-    await libsql.execute({
+    statements.push({
+      sql: "DELETE FROM place_sources WHERE place_id = ? AND field_name = ? AND source_url = ?",
+      args: [placeId, citation.fieldName, citation.sourceUrl],
+    });
+    statements.push({
       sql: `
         INSERT INTO place_sources (place_id, field_name, source_url, source_title, excerpt, confidence, retrieved_at)
         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -234,15 +265,13 @@ async function importRow(row: CsvRow, runId: string): Promise<boolean> {
     });
   }
 
-  await libsql.execute({
+  statements.push({
     sql: `
       INSERT INTO enrichment_items (run_id, place_id, status, output_payload, imported_at)
       VALUES (?, ?, 'imported', ?, CURRENT_TIMESTAMP)
     `,
     args: [runId, placeId, JSON.stringify(row)],
   });
-
-  return true;
 }
 
 async function importEnrichment(): Promise<void> {
@@ -253,33 +282,42 @@ async function importEnrichment(): Promise<void> {
 
   const runId = process.argv[3] || basename(source).replace(/\.csv$/i, "");
   const rows = parseCsv(await readFile(source, "utf8"));
-
-  await libsql.execute({
-    sql: `
-      INSERT OR REPLACE INTO enrichment_runs (
-        id, provider, status, input_path, output_path, requested_fields, started_at, completed_at, error
-      )
-      VALUES (?, 'parallel', 'importing', '', ?, '[]', CURRENT_TIMESTAMP, NULL, '')
-    `,
-    args: [runId, source],
-  });
-
-  let imported = 0;
-  for (const row of rows) {
-    if (await importRow(row, runId)) {
-      imported += 1;
-    }
+  const ids = validateEnrichmentRows(rows);
+  const existingIds = await existingPlaceIds(ids);
+  const missingIds = ids.filter((id) => !existingIds.has(id));
+  if (missingIds.length > 0) {
+    throw new Error(`Invalid enrichment CSV: unknown place ids ${missingIds.join(", ")}`);
   }
 
-  await libsql.execute({
+  const statements: InStatement[] = [
+    {
+      sql: `
+        INSERT OR REPLACE INTO enrichment_runs (
+          id, provider, status, input_path, output_path, requested_fields, started_at, completed_at, error
+        )
+        VALUES (?, 'parallel', 'importing', '', ?, '[]', CURRENT_TIMESTAMP, NULL, '')
+      `,
+      args: [runId, source],
+    },
+  ];
+
+  for (const row of rows) {
+    addImportRowStatements(statements, row, runId);
+  }
+
+  statements.push({
     sql: "UPDATE enrichment_runs SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
     args: [runId],
   });
 
-  console.log(`Imported ${imported} enriched rows from ${source}`);
+  await libsql.batch(statements, "write");
+
+  console.log(`Imported ${rows.length} enriched rows from ${source}`);
 }
 
-importEnrichment().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  importEnrichment().catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

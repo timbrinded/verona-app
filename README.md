@@ -6,7 +6,7 @@ Mobile-first Verona travel guide backed by SQLite-compatible Turso/libSQL.
 
 - Next.js app with a full-screen Mapbox map.
 - `/api/places` reads active places from SQLite.
-- The browser fetches places once on load; PWA caching keeps the API/static export available for travel use.
+- The browser fetches places once on load; Serwist PWA caching keeps the API/static export available for travel use.
 - `data/places.seed.json` is the editable seed source.
 - `public/data/places.json` is a generated static fallback exported from SQLite.
 
@@ -40,6 +40,12 @@ Create/update the local schema, seed from `data/places.seed.json`, and export th
 
 ```bash
 npm run db:setup
+```
+
+Generate a new schema migration after changing `src/db/schema.ts`:
+
+```bash
+npm run db:generate -- --name describe_the_change
 ```
 
 Run the app:
@@ -81,7 +87,30 @@ The importer fills missing core fields, adds rich travel details, stores citatio
 ## Checks
 
 ```bash
+npm run test
 npm run lint
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
+
+`npm run test:e2e` starts the production build locally, checks `/api/places`, verifies map markers and filtering, and forces an API failure to confirm static fallback rendering.
+
+## Deployment
+
+Vercel deploys from the public GitHub repo `timbrinded/verona-app` on `main`.
+
+Before deploying a database-backed change:
+
+```bash
+TURSO_DATABASE_URL=libsql://your-database.turso.io TURSO_AUTH_TOKEN=... npm run db:setup
+git push public HEAD:main
+```
+
+After deployment, verify production is reading Turso:
+
+```bash
+curl -I https://verona-app-eight.vercel.app/api/places
+```
+
+The response should include `x-places-source: sqlite`. If a Turso API token was shared outside a secret manager, rotate it after use.

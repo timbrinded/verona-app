@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
 import type { Place } from "@/lib/place-types";
+import { parsePlacesPayload } from "@/lib/place-validation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,36 +15,41 @@ function shouldUseSqlite(): boolean {
 
 async function loadStaticPlaces(): Promise<Place[]> {
   const path = join(process.cwd(), "public", "data", "places.json");
-  return JSON.parse(await readFile(path, "utf8")) as Place[];
+  return parsePlacesPayload(JSON.parse(await readFile(path, "utf8")));
+}
+
+function placesResponse(places: Place[], source: string) {
+  return NextResponse.json(places, {
+    headers: {
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=600",
+      "X-Places-Source": source,
+    },
+  });
 }
 
 export async function GET() {
+  if (!shouldUseSqlite()) {
+    const places = await loadStaticPlaces();
+    return placesResponse(places, "static-fallback");
+  }
+
   try {
-    if (!shouldUseSqlite()) {
-      const places = await loadStaticPlaces();
-
-      return NextResponse.json(places, {
-        headers: {
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=600",
-          "X-Places-Source": "static-fallback",
-        },
-      });
-    }
-
     const { listPlaces } = await import("@/lib/places");
     const places = await listPlaces();
 
-    return NextResponse.json(places, {
-      headers: {
-        "Cache-Control": "public, max-age=60, stale-while-revalidate=600",
-        "X-Places-Source": "sqlite",
-      },
-    });
+    return placesResponse(places, "sqlite");
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to load places";
+    console.error("Failed to load places from SQLite", error);
+
+    try {
+      const places = await loadStaticPlaces();
+      return placesResponse(places, "static-fallback-after-error");
+    } catch (fallbackError: unknown) {
+      console.error("Failed to load static place fallback", fallbackError);
+    }
 
     return NextResponse.json(
-      { error: message },
+      { error: "Failed to load places" },
       {
         status: 500,
         headers: {

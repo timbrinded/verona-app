@@ -53,6 +53,10 @@ export function parseCsv(input: string): CsvRow[] {
     }
   }
 
+  if (quoted) {
+    throw new Error("Invalid CSV: unterminated quoted field");
+  }
+
   if (field.length > 0 || row.length > 0) {
     row.push(field);
     rows.push(row);
@@ -60,8 +64,19 @@ export function parseCsv(input: string): CsvRow[] {
 
   const [headers, ...body] = rows.filter((line) => line.some((cell) => cell.length > 0));
   if (!headers) return [];
+  const normalizedHeaders = headers.map((header) => header.trim());
+  const seenHeaders = new Set<string>();
+  for (const header of normalizedHeaders) {
+    if (!header) {
+      throw new Error("Invalid CSV: empty header");
+    }
+    if (seenHeaders.has(header)) {
+      throw new Error(`Invalid CSV: duplicate header ${header}`);
+    }
+    seenHeaders.add(header);
+  }
 
   return body.map((line) =>
-    Object.fromEntries(headers.map((header, index) => [header, line[index] ?? ""])),
+    Object.fromEntries(normalizedHeaders.map((header, index) => [header, line[index] ?? ""])),
   );
 }
