@@ -4,6 +4,11 @@ import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "playwright";
 
+const smokeTimeout = setTimeout(() => {
+  console.error("[smoke] Timed out after 90 seconds");
+  process.exit(1);
+}, 90_000);
+
 async function freePort(): Promise<number> {
   const server = createServer();
   server.listen(0, "127.0.0.1");
@@ -56,12 +61,14 @@ async function main(): Promise<void> {
 
   try {
     await waitForServer(baseUrl);
+    console.log(`[smoke] Server ready at ${baseUrl}`);
 
     const browser = await chromium.launch({ headless: true });
     try {
       const context = await browser.newContext({ serviceWorkers: "block" });
       const page = await context.newPage();
 
+      console.log("[smoke] Checking live API and map");
       await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
       const api = await page.evaluate(async () => {
         const response = await fetch("/api/places");
@@ -76,18 +83,23 @@ async function main(): Promise<void> {
       }
 
       await page.waitForSelector(".mapboxgl-canvas", { timeout: 20_000 });
-      await page.waitForFunction(() => document.querySelectorAll(".place-marker").length >= 10);
+      await page.waitForFunction(() => document.querySelectorAll(".place-marker").length >= 10, undefined, {
+        timeout: 20_000,
+      });
       await page.getByLabel("Toggle filters").click();
       await page.getByRole("button", { name: /Pub/ }).click();
-      await page.waitForFunction(() => document.body.textContent?.includes("14 places"));
+      await page.getByText("14 places").waitFor({ timeout: 10_000 });
 
+      console.log("[smoke] Checking static fallback path");
       const fallbackPage = await context.newPage();
       await fallbackPage.route("**/api/places", (route) =>
         route.fulfill({ status: 500, contentType: "application/json", body: '{"error":"forced"}' }),
       );
       await fallbackPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
       await fallbackPage.getByText("Offline mode").waitFor({ timeout: 10_000 });
-      await fallbackPage.waitForFunction(() => document.querySelectorAll(".place-marker").length >= 10);
+      await fallbackPage.waitForFunction(() => document.querySelectorAll(".place-marker").length >= 10, undefined, {
+        timeout: 20_000,
+      });
     } finally {
       await browser.close();
     }
@@ -99,4 +111,6 @@ async function main(): Promise<void> {
 main().catch((error: unknown) => {
   console.error(error);
   process.exitCode = 1;
+}).finally(() => {
+  clearTimeout(smokeTimeout);
 });
