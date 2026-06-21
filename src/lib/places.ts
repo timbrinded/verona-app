@@ -3,14 +3,16 @@ import { db } from "@/db/client";
 import {
   placeDetails,
   placeLinks,
+  placeMedia,
   places,
   placeSources,
   type PlaceDetailRow,
   type PlaceLinkRow,
+  type PlaceMediaRow,
   type PlaceRow,
   type PlaceSourceRow,
 } from "@/db/schema";
-import type { Place, PlaceDetails, PlaceLink, PlaceSource } from "./place-types";
+import type { Place, PlaceDetails, PlaceLink, PlaceMedia, PlaceSource } from "./place-types";
 
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -87,11 +89,29 @@ function publicSource(row: PlaceSourceRow): PlaceSource {
   };
 }
 
+function publicMedia(row: PlaceMediaRow): PlaceMedia {
+  return {
+    url: row.url,
+    sourceUrl: row.sourceUrl,
+    sourceType: row.sourceType,
+    kind: row.kind,
+    caption: row.caption,
+    attribution: row.attribution,
+    width: row.width,
+    height: row.height,
+    qualityScore: row.qualityScore,
+    approved: row.approved === 1,
+    rejectedReason: row.rejectedReason,
+    retrievedAt: row.retrievedAt,
+  };
+}
+
 function publicPlace(
   row: PlaceRow,
   details: PlaceDetailRow | null,
   links: PlaceLinkRow[],
   sources: PlaceSourceRow[],
+  media: PlaceMediaRow[],
 ): Place {
   return {
     id: row.id,
@@ -118,6 +138,7 @@ function publicPlace(
     links: links.map(publicLink),
     details: detailsFromRow(details),
     sources: sources.map(publicSource),
+    media: media.map(publicMedia),
     dataQuality: row.dataQuality,
     lastEnrichedAt: row.lastEnrichedAt,
     updatedAt: row.updatedAt,
@@ -142,6 +163,13 @@ export async function listPlaces(): Promise<Place[]> {
   const sourceRows = ids.length
     ? await db.select().from(placeSources).where(inArray(placeSources.placeId, ids)).orderBy(asc(placeSources.fieldName))
     : [];
+  const mediaRows = ids.length
+    ? await db
+        .select()
+        .from(placeMedia)
+        .where(inArray(placeMedia.placeId, ids))
+        .orderBy(asc(placeMedia.placeId), desc(placeMedia.qualityScore))
+    : [];
 
   const linksByPlace = new Map<string, PlaceLinkRow[]>();
   for (const link of linkRows) {
@@ -153,7 +181,19 @@ export async function listPlaces(): Promise<Place[]> {
     sourcesByPlace.set(source.placeId, [...(sourcesByPlace.get(source.placeId) ?? []), source]);
   }
 
+  const mediaByPlace = new Map<string, PlaceMediaRow[]>();
+  for (const media of mediaRows) {
+    if (media.approved !== 1) continue;
+    mediaByPlace.set(media.placeId, [...(mediaByPlace.get(media.placeId) ?? []), media]);
+  }
+
   return rows.map((row) =>
-    publicPlace(row.place, row.details, linksByPlace.get(row.place.id) ?? [], sourcesByPlace.get(row.place.id) ?? []),
+    publicPlace(
+      row.place,
+      row.details,
+      linksByPlace.get(row.place.id) ?? [],
+      sourcesByPlace.get(row.place.id) ?? [],
+      mediaByPlace.get(row.place.id) ?? [],
+    ),
   );
 }

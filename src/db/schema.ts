@@ -98,6 +98,33 @@ export const placeSources = sqliteTable(
   ],
 );
 
+export const placeMedia = sqliteTable(
+  "place_media",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    placeId: text("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    sourceUrl: text("source_url").notNull().default(""),
+    sourceType: text("source_type").notNull().default("unknown"),
+    kind: text("kind").notNull().default("unknown"),
+    caption: text("caption").notNull().default(""),
+    attribution: text("attribution").notNull().default(""),
+    width: integer("width").notNull().default(0),
+    height: integer("height").notNull().default(0),
+    qualityScore: real("quality_score").notNull().default(0),
+    approved: integer("approved").notNull().default(0),
+    rejectedReason: text("rejected_reason").notNull().default(""),
+    retrievedAt: text("retrieved_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("place_media_place_idx").on(table.placeId),
+    index("place_media_approved_idx").on(table.approved),
+    uniqueIndex("place_media_place_url_unique").on(table.placeId, table.url),
+  ],
+);
+
 export const enrichmentRuns = sqliteTable("enrichment_runs", {
   id: text("id").primaryKey(),
   provider: text("provider").notNull().default("parallel"),
@@ -137,3 +164,4 @@ export type NewPlaceRow = typeof places.$inferInsert;
 export type PlaceLinkRow = typeof placeLinks.$inferSelect;
 export type PlaceDetailRow = typeof placeDetails.$inferSelect;
 export type PlaceSourceRow = typeof placeSources.$inferSelect;
+export type PlaceMediaRow = typeof placeMedia.$inferSelect;

@@ -1,4 +1,4 @@
-import type { Place, PlaceDetails, PlaceLink, PlaceSource } from "./place-types";
+import type { Place, PlaceDetails, PlaceLink, PlaceMedia, PlaceSource } from "./place-types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -83,6 +83,27 @@ function normalizeSource(value: unknown): PlaceSource | null {
   };
 }
 
+function normalizeMedia(value: unknown): PlaceMedia | null {
+  if (!isRecord(value)) return null;
+  const url = optionalString(value, "url");
+  if (!url) return null;
+
+  return {
+    url,
+    sourceUrl: optionalString(value, "sourceUrl"),
+    sourceType: optionalString(value, "sourceType"),
+    kind: optionalString(value, "kind"),
+    caption: optionalString(value, "caption"),
+    attribution: optionalString(value, "attribution"),
+    width: Math.trunc(optionalNumber(value, "width")),
+    height: Math.trunc(optionalNumber(value, "height")),
+    qualityScore: optionalNumber(value, "qualityScore"),
+    approved: value.approved === true || value.approved === 1,
+    rejectedReason: optionalString(value, "rejectedReason"),
+    retrievedAt: optionalString(value, "retrievedAt"),
+  };
+}
+
 function normalizeDetails(value: unknown): PlaceDetails {
   const details = isRecord(value) ? value : {};
 
@@ -135,6 +156,9 @@ function normalizePlace(value: unknown, index: number): Place {
     details: normalizeDetails(value.details),
     sources: Array.isArray(value.sources)
       ? value.sources.map(normalizeSource).filter((source): source is PlaceSource => source !== null)
+      : [],
+    media: Array.isArray(value.media)
+      ? value.media.map(normalizeMedia).filter((media): media is PlaceMedia => media !== null)
       : [],
     dataQuality,
     lastEnrichedAt: optionalNullableString(value, "lastEnrichedAt"),

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { listPlaces } from "../../src/lib/places";
+import { isDecorativeAsset, isSocialUrl } from "../../src/lib/media-quality";
 import { validateBookingUrl } from "./booking";
 
 interface QaIssue {
@@ -44,6 +45,21 @@ async function qa(): Promise<void> {
 
     if (!place.isHomeBase && place.sources.length === 0) {
       issues.push({ id: place.id, name: place.name, field: "citations", message: "Missing citations" });
+    }
+
+    for (const media of place.media) {
+      if (!media.approved) {
+        issues.push({ id: place.id, name: place.name, field: "media", message: "Unapproved media is exposed" });
+      }
+      if (media.width < 520 || media.height < 320) {
+        issues.push({ id: place.id, name: place.name, field: "media", message: `Media too small: ${media.url}` });
+      }
+      if (isSocialUrl(media.url) || isSocialUrl(media.sourceUrl)) {
+        issues.push({ id: place.id, name: place.name, field: "media", message: `Social media image exposed: ${media.url}` });
+      }
+      if (isDecorativeAsset(`${media.url} ${media.caption}`)) {
+        issues.push({ id: place.id, name: place.name, field: "media", message: `Decorative media exposed: ${media.url}` });
+      }
     }
   }
 

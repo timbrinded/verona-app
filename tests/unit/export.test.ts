@@ -39,6 +39,7 @@ function place(overrides: Partial<Place> = {}): Place {
       updatedAt: "old-detail-time",
     },
     sources: [],
+    media: [],
     dataQuality: {},
     lastEnrichedAt: "old-enriched-time",
     updatedAt: "old-place-time",

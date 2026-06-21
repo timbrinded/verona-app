@@ -25,6 +25,7 @@
     "enrich:parallel-json-to-csv": "tsx scripts/enrichment/parallel-json-to-csv.ts",
     "enrich:merge-candidates": "tsx scripts/enrichment/merge-candidates.ts",
     "enrich:import": "tsx scripts/enrichment/import.ts",
+    "enrich:media": "tsx scripts/enrichment/process-media.ts",
     "enrich:promote-seed": "tsx scripts/enrichment/promote-seed.ts"
   },
   "dependencies": {

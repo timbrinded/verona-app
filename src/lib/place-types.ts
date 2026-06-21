@@ -31,6 +31,21 @@ export interface PlaceSource {
   retrievedAt: string;
 }
 
+export interface PlaceMedia {
+  url: string;
+  sourceUrl: string;
+  sourceType: string;
+  kind: string;
+  caption: string;
+  attribution: string;
+  width: number;
+  height: number;
+  qualityScore: number;
+  approved: boolean;
+  rejectedReason: string;
+  retrievedAt: string;
+}
+
 export interface Place {
   id: string;
   slug: string;
@@ -56,6 +71,7 @@ export interface Place {
   links: PlaceLink[];
   details: PlaceDetails;
   sources: PlaceSource[];
+  media: PlaceMedia[];
   dataQuality: Record<string, unknown>;
   lastEnrichedAt: string | null;
   updatedAt: string;
