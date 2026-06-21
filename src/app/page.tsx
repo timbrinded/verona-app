@@ -1,23 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { X } from "lucide-react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Place, PlaceLink } from "@/lib/place-types";
 import { parsePlacesPayload } from "@/lib/place-validation";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Popover, PopoverArrow, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Sights: "#8B5CF6",
-  Viewpoint: "#EC4899",
-  "Fine Dining": "#F59E0B",
-  Osteria: "#10B981",
-  Trattoria: "#34D399",
-  "Wine Bar": "#7C3AED",
-  "Cocktail Bar": "#F472B6",
-  Aperitivo: "#FB923C",
-  Pub: "#60A5FA",
-  Gelato: "#A78BFA",
-  Accommodation: "#EF4444",
+  Sights: "#e6ff00",
+  Viewpoint: "#ff3df2",
+  "Fine Dining": "#ff7a00",
+  Osteria: "#28ff8a",
+  Trattoria: "#00e5ff",
+  "Wine Bar": "#9b5cff",
+  "Cocktail Bar": "#ff3df2",
+  Aperitivo: "#ffb000",
+  Pub: "#00e5ff",
+  Gelato: "#e6ff00",
+  Accommodation: "#ff3d00",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -74,10 +77,10 @@ function primaryLinks(place: Place): PlaceLink[] {
 }
 
 function linkClass(type: string): string {
-  if (type === "google_maps") return "bg-blue-600";
-  if (type === "booking" || type === "airbnb") return "bg-green-600";
-  if (type === "menu") return "bg-amber-600";
-  return "bg-gray-700";
+  if (type === "google_maps") return "brutal-action bg-[var(--vb-cyan)]";
+  if (type === "booking" || type === "airbnb") return "brutal-action bg-[var(--vb-lime)]";
+  if (type === "menu") return "brutal-action bg-[var(--vb-orange)]";
+  return "brutal-action brutal-action-dark";
 }
 
 function vibeScore(value: number): string {
@@ -119,11 +122,210 @@ function sourceLabel(source: Place["sources"][number]): string {
   }
 }
 
+interface VibeFactor {
+  label: string;
+  detail: string;
+  value: number;
+}
+
+interface VibeBreakdown {
+  total: number;
+  factors: VibeFactor[];
+  penalties: VibeFactor[];
+}
+
+function scoreComponent(place: Place, key: string): boolean {
+  const components = place.dataQuality.scoreComponents;
+  if (!components || typeof components !== "object" || Array.isArray(components)) return false;
+  return (components as Record<string, unknown>)[key] === true;
+}
+
+function allocateFactors(rawFactors: VibeFactor[], target: number): VibeFactor[] {
+  if (target <= 0) return [];
+
+  const rawTotal = rawFactors.reduce((sum, factor) => sum + factor.value, 0);
+  if (rawTotal <= 0) {
+    return [{ label: "Curated score", detail: "Stored vibe score from the enrichment review", value: target }];
+  }
+
+  const projected = rawFactors.map((factor) => {
+    const exact = (factor.value / rawTotal) * target;
+    return { ...factor, exact, value: Math.floor(exact) };
+  });
+  let remainder = target - projected.reduce((sum, factor) => sum + factor.value, 0);
+
+  const byFraction = [...projected].sort((a, b) => b.exact - Math.floor(b.exact) - (a.exact - Math.floor(a.exact)));
+  for (let index = 0; remainder > 0; index += 1, remainder -= 1) {
+    byFraction[index % byFraction.length].value += 1;
+  }
+
+  return projected
+    .filter((factor) => factor.value > 0)
+    .map((factor) => ({ label: factor.label, detail: factor.detail, value: factor.value }));
+}
+
+function vibeBreakdown(place: Place): VibeBreakdown {
+  const total = Math.min(20, Math.max(0, Math.round(Number.isFinite(place.vibe) ? place.vibe : 0)));
+  const details = place.details;
+  const sourceCount = place.sources.length;
+  const detailSignals = [
+    details.openingHours.length > 0 ? "hours" : "",
+    details.bestTimeToVisit ? "best time" : "",
+    details.reservationGuidance || details.bookingNotes ? "booking guidance" : "",
+    details.visitTips ? "visit tips" : "",
+    details.menuHighlights ? "menu notes" : "",
+  ].filter(Boolean);
+
+  const rawFactors: VibeFactor[] = [
+    {
+      label: "Public rating",
+      detail: place.rating > 0 ? `${place.rating.toFixed(1)} rating captured` : "No public rating captured",
+      value: place.rating >= 4.8 ? 5 : place.rating >= 4.6 ? 4 : place.rating >= 4.4 ? 3 : place.rating > 0 ? 2 : 0,
+    },
+    {
+      label: "Review signal",
+      detail: place.reviews > 0 ? `${place.reviews.toLocaleString()} public reviews` : "No review count captured",
+      value: place.reviews >= 700 ? 4 : place.reviews >= 200 ? 3 : place.reviews > 0 ? 2 : 0,
+    },
+    {
+      label: "Source support",
+      detail: `${sourceCount} cited ${sourceCount === 1 ? "source" : "sources"}`,
+      value: sourceCount >= 5 ? 4 : sourceCount >= 3 ? 3 : sourceCount > 0 ? 2 : 0,
+    },
+    {
+      label: "Visit detail",
+      detail: detailSignals.length > 0 ? detailSignals.join(", ") : "No structured visit details yet",
+      value: Math.min(4, detailSignals.length),
+    },
+    {
+      label: "Local character",
+      detail: scoreComponent(place, "authenticSentiment")
+        ? "Authentic/local sentiment flag is present"
+        : selectedTextSignal(place),
+      value: scoreComponent(place, "authenticSentiment") ? 4 : place.notes || place.description ? 2 : 0,
+    },
+    {
+      label: "Curated fit",
+      detail: [
+        place.category,
+        place.price || "",
+        place.confidence > 0 ? `${Math.round(place.confidence * 100)}% data confidence` : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      value:
+        (scoreComponent(place, "michelinListed") ? 3 : 0) +
+        (scoreComponent(place, "priceQuality") ? 2 : 0) +
+        (scoreComponent(place, "undiscoveredGem") ? 2 : 0) +
+        (place.confidence >= 0.75 ? 2 : 1),
+    },
+  ].filter((factor) => factor.value > 0);
+
+  const penalties: VibeFactor[] = [
+    scoreComponent(place, "touristTrapLanguage")
+      ? { label: "Tourist-trap language", detail: "Warning flag was present in enrichment", value: -4 }
+      : null,
+    scoreComponent(place, "decliningRatings")
+      ? { label: "Declining ratings", detail: "Recent rating decline flag was present", value: -3 }
+      : null,
+    scoreComponent(place, "menuPhotosOutside")
+      ? { label: "Menu/photo mismatch", detail: "Outside-source menu/photo warning was present", value: -2 }
+      : null,
+  ].filter((factor): factor is VibeFactor => factor !== null);
+
+  const penaltyTotal = penalties.reduce((sum, factor) => sum + factor.value, 0);
+  const positiveTarget = total - penaltyTotal;
+  const factors = allocateFactors(rawFactors, positiveTarget);
+
+  return { total, factors, penalties };
+}
+
+function selectedTextSignal(place: Place): string {
+  if (place.description && place.notes) return "Description and notes are present";
+  if (place.description) return "Description is present";
+  if (place.notes) return "Notes are present";
+  return "No local character text captured yet";
+}
+
+function VibePopover({ place, label }: { place: Place; label: string }) {
+  const breakdown = vibeBreakdown(place);
+  const positiveSubtotal = breakdown.factors.reduce((sum, factor) => sum + factor.value, 0);
+  const penaltySubtotal = breakdown.penalties.reduce((sum, factor) => sum + factor.value, 0);
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="brutal-vibe px-2 py-1 text-[11px] font-black uppercase transition hover:-translate-y-0.5">
+          Vibe {label}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="start"
+        className="max-h-[18rem] w-[calc(100vw-3rem)] max-w-[20rem] overflow-y-auto bg-[var(--vb-paper)] p-3"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-black uppercase tracking-wide text-fuchsia-700">Vibe score</div>
+            <div className="mt-0.5 text-3xl font-black leading-none text-black">{breakdown.total}/20</div>
+          </div>
+          <PopoverClose
+            className="brutal-action bg-white p-1 text-black"
+            aria-label="Close vibe score"
+          >
+            <X className="h-4 w-4" strokeWidth={3} />
+          </PopoverClose>
+        </div>
+
+        <div className="mt-2 space-y-1.5">
+          {breakdown.factors.map((factor) => (
+            <div key={factor.label} className="border-[3px] border-black bg-white px-2.5 py-1.5 shadow-[3px_3px_0_#00e5ff]">
+              <div className="flex items-start justify-between gap-3 text-[13px] font-black text-black">
+                <span>{factor.label}</span>
+                <span className="text-fuchsia-700">+{factor.value}</span>
+              </div>
+              <div className="text-[11px] font-semibold leading-4 text-gray-700">{factor.detail}</div>
+            </div>
+          ))}
+
+          {breakdown.penalties.map((factor) => (
+            <div key={factor.label} className="border-[3px] border-black bg-[#ffe0f7] px-2.5 py-1.5 shadow-[3px_3px_0_#08080a]">
+              <div className="flex items-start justify-between gap-3 text-[13px] font-black text-black">
+                <span>{factor.label}</span>
+                <span className="text-fuchsia-800">{factor.value}</span>
+              </div>
+              <div className="text-[11px] font-semibold leading-4 text-gray-700">{factor.detail}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 border-t-[3px] border-black pt-2 text-[11px] font-black uppercase text-black">
+          <div className="flex justify-between">
+            <span>Signal subtotal</span>
+            <span>+{positiveSubtotal}</span>
+          </div>
+          {penaltySubtotal < 0 && (
+            <div className="mt-1 flex justify-between text-fuchsia-700">
+              <span>Warning subtotal</span>
+              <span>{penaltySubtotal}</span>
+            </div>
+          )}
+          <div className="mt-1 flex justify-between bg-[var(--vb-acid)] px-2 py-1 text-black">
+            <span>Final vibe</span>
+            <span>{breakdown.total}/20</span>
+          </div>
+        </div>
+        <PopoverArrow className="fill-[var(--vb-paper)] stroke-black stroke-2" />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function DetailList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
 
   return (
-    <ul className="mt-1 space-y-1 pl-4 list-disc marker:text-gray-300">
+    <ul className="mt-1 space-y-0.5 pl-4 list-disc marker:text-fuchsia-600">
       {items.slice(0, 4).map((item) => (
         <li key={item}>{item}</li>
       ))}
@@ -131,11 +333,11 @@ function DetailList({ items }: { items: string[] }) {
   );
 }
 
-function DetailLine({ label, children }: { label: string; children: React.ReactNode }) {
+function DetailLine({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="border-l-2 border-gray-200 pl-3">
-      <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</div>
-      <div className="mt-1 text-sm leading-6 text-gray-700">{children}</div>
+    <div className="border-l-[4px] border-fuchsia-500 bg-white px-2.5 py-1.5 shadow-[2px_2px_0_#08080a]">
+      <div className="text-[10px] font-black uppercase tracking-wide text-fuchsia-700">{label}</div>
+      <div className="mt-0.5 text-[13px] font-semibold leading-5 text-gray-800">{children}</div>
     </div>
   );
 }
@@ -243,17 +445,17 @@ export default function Home() {
       const element = document.createElement("div");
       element.className = "place-marker";
       element.style.cssText = `
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         background: ${CATEGORY_COLORS[place.category] || "#6B7280"};
-        border: 2px solid white;
-        border-radius: 50%;
+        border: 3px solid #08080a;
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        font-size: 14px;
+        box-shadow: 3px 3px 0 #08080a;
       `;
       element.innerHTML = CATEGORY_ICONS[place.category] || "📍";
       element.onclick = () => setSelectedPlace(place);
@@ -280,17 +482,17 @@ export default function Home() {
     const element = document.createElement("div");
     element.className = "place-marker home-base-marker";
     element.style.cssText = `
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       background: linear-gradient(135deg, #EF4444, #DC2626);
-      border: 3px solid white;
-      border-radius: 50%;
+      border: 4px solid #08080a;
+      border-radius: 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 12px rgba(239,68,68,0.5);
+      font-size: 20px;
+      box-shadow: 4px 4px 0 #ff3df2;
     `;
     element.innerHTML = "🏠";
     element.onclick = () => setSelectedPlace(homeBase);
@@ -340,7 +542,7 @@ export default function Home() {
   const selectedVisitTips = selectedPlace ? textList(selectedPlace.details.visitTips) : [];
 
   return (
-    <main className="h-screen w-screen relative overflow-hidden isolate">
+    <main className="verona-brutal h-screen w-screen relative overflow-hidden isolate bg-[var(--vb-paper)]">
       <div ref={mapContainer} className="absolute inset-0 z-0" />
 
       <div className="absolute top-4 left-4 right-4 z-40 flex gap-2">
@@ -349,11 +551,11 @@ export default function Home() {
           placeholder="Search places..."
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          className="flex-1 px-4 py-2 rounded-full bg-white shadow-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="brutal-control min-w-0 flex-1 px-3 py-2 text-sm font-black uppercase placeholder:text-gray-500 focus:outline-none"
         />
         <button
           onClick={() => setShowFilters((value) => !value)}
-          className={`px-4 py-2 rounded-full shadow-lg ${showFilters ? "bg-purple-600 text-white" : "bg-white text-gray-800"}`}
+          className={`brutal-action px-3 py-1.5 text-lg ${showFilters ? "bg-[var(--vb-acid)]" : "bg-white"}`}
           aria-label="Toggle filters"
         >
           ⚙️
@@ -361,21 +563,21 @@ export default function Home() {
       </div>
 
       {loadError && (
-        <div className="absolute top-16 left-4 right-4 z-40 bg-red-600 text-white px-4 py-2 rounded-lg text-center text-sm shadow-lg">
+        <div className="brutal-panel absolute top-20 left-4 right-4 z-40 bg-[#ff3d00] px-4 py-2 text-center text-sm font-black uppercase text-white">
           {loadError}
         </div>
       )}
 
       {showFilters && (
-        <div className="absolute top-20 left-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 max-h-60 overflow-y-auto">
-          <div className="text-sm font-semibold text-gray-600 mb-2">Categories</div>
-          <div className="flex flex-wrap gap-2">
+        <div className="brutal-panel absolute top-20 left-4 right-4 z-50 max-h-56 overflow-y-auto bg-[var(--vb-paper)] p-3">
+          <div className="mb-2 inline-block bg-[var(--vb-acid)] px-2 py-0.5 text-[11px] font-black uppercase text-black">Categories</div>
+          <div className="flex flex-wrap gap-1.5">
             {allCategories.map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(activeCategory === category ? null : category)}
-                className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-all ${
-                  activeCategory === category ? "bg-purple-600 text-white" : "bg-gray-200 text-gray-600"
+                className={`brutal-chip flex items-center gap-1 px-2 py-0.5 text-xs font-black transition-all ${
+                  activeCategory === category ? "bg-[var(--vb-pink)]" : "bg-white"
                 }`}
               >
                 <span>{CATEGORY_ICONS[category] || "📍"}</span>
@@ -387,113 +589,52 @@ export default function Home() {
         </div>
       )}
 
-      <div className="absolute bottom-24 left-4 z-40 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm text-gray-600 shadow">
+      <div className="brutal-control absolute bottom-20 left-4 z-40 bg-[var(--vb-acid)] px-2.5 py-0.5 text-xs font-black uppercase text-black">
         {filteredPlaces.length} places
       </div>
 
       {selectedPlace && (
-        <div className="absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-2xl shadow-2xl p-4 pb-8 max-h-[72vh] overflow-y-auto animate-slide-up">
+        <div className="brutal-panel absolute bottom-0 left-0 right-0 z-[60] max-h-[68vh] overflow-y-auto border-x-0 border-b-0 bg-[var(--vb-paper)] p-3 pb-5 animate-slide-up">
           <button
             onClick={() => setSelectedPlace(null)}
-            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"
+            className="brutal-action absolute top-2.5 right-2.5 flex h-8 w-8 items-center justify-center bg-white text-lg font-black text-black"
             aria-label="Close place"
           >
             ✕
           </button>
 
-          <div className="flex items-start gap-3 pr-8 border-b border-gray-100 pb-3">
+          <div className="flex items-start gap-2.5 border-b-[3px] border-black pb-3 pr-9">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+              className="flex h-11 w-11 shrink-0 items-center justify-center border-[3px] border-black text-xl shadow-[3px_3px_0_#08080a]"
               style={{ background: CATEGORY_COLORS[selectedPlace.category] || "#6B7280" }}
             >
               {CATEGORY_ICONS[selectedPlace.category] || "📍"}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold leading-tight text-gray-950 break-words">{selectedPlace.name}</h2>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-gray-700">
-                <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.category}</span>
-                {selectedPlace.price && <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.price}</span>}
+              <h2 className="text-xl font-black uppercase leading-none text-black break-words">{selectedPlace.name}</h2>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-black uppercase text-black">
+                <span className="brutal-chip px-1.5 py-0.5">{selectedPlace.category}</span>
+                {selectedPlace.price && <span className="brutal-chip bg-[var(--vb-cyan)] px-1.5 py-0.5">{selectedPlace.price}</span>}
                 {selectedPlace.rating > 0 && (
-                  <span className="rounded-md bg-amber-50 px-2 py-1 text-amber-800">{selectedPlace.rating} rating</span>
+                  <span className="brutal-chip bg-[var(--vb-orange)] px-1.5 py-0.5">{selectedPlace.rating} rating</span>
                 )}
                 {selectedPlace.reviews > 0 && (
-                  <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.reviews} reviews</span>
+                  <span className="brutal-chip bg-white px-1.5 py-0.5">{selectedPlace.reviews} reviews</span>
                 )}
-                {selectedVibeScore && (
-                  <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">Vibe {selectedVibeScore}</span>
-                )}
+                {selectedVibeScore && <VibePopover place={selectedPlace} label={selectedVibeScore} />}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 space-y-3 text-sm text-gray-600">
-            {selectedPlace.address && <p className="leading-6">📍 {selectedPlace.address}</p>}
-            {userLocation && selectedPlace.lat && (
-              <p>🚶 {(getDistanceFromUser(selectedPlace)! * 1000).toFixed(0)}m away</p>
-            )}
-            {(selectedPlace.description || selectedPlace.notes) && (
-              <p className="border-l-2 border-gray-200 pl-3 text-[15px] leading-7 text-gray-800">
-                {selectedPlace.description || selectedPlace.notes}
-              </p>
-            )}
-            {selectedPlace.description && selectedPlace.notes && <p className="text-gray-500">{selectedPlace.notes}</p>}
-          </div>
-
-          {(selectedPlace.details.bestTimeToVisit ||
-            selectedPlace.details.reservationGuidance ||
-            selectedPlace.details.visitTips ||
-            selectedPlace.details.menuHighlights ||
-            selectedPlace.details.openingHours.length > 0) && (
-            <div className="mt-4 grid gap-4">
-              {selectedPlace.details.bestTimeToVisit && (
-                <DetailLine label="Best time">{selectedPlace.details.bestTimeToVisit}</DetailLine>
-              )}
-              {selectedPlace.details.reservationGuidance && (
-                <DetailLine label="Booking">{selectedPlace.details.reservationGuidance}</DetailLine>
-              )}
-              {selectedVisitTips.length > 0 && (
-                <DetailLine label="Tips">
-                  <DetailList items={selectedVisitTips} />
-                </DetailLine>
-              )}
-              {selectedMenuHighlights.length > 0 && (
-                <DetailLine label="Menu">
-                  <DetailList items={selectedMenuHighlights} />
-                </DetailLine>
-              )}
-              {selectedPlace.details.openingHours.length > 0 && (
-                <DetailLine label="Hours">{selectedPlace.details.openingHours.slice(0, 3).join(" · ")}</DetailLine>
-              )}
-            </div>
-          )}
-
-          {(selectedPlace.details.dietaryTags.length > 0 ||
-            selectedPlace.details.accessibilityNotes ||
-            selectedPlace.details.paymentNotes) && (
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-700">
-              {selectedPlace.details.dietaryTags.map((tag) => (
-                <span key={tag} className="px-2 py-1 rounded-full bg-gray-100">
-                  {tag}
-                </span>
-              ))}
-              {selectedPlace.details.accessibilityNotes && (
-                <span className="px-2 py-1 rounded-full bg-gray-100">{selectedPlace.details.accessibilityNotes}</span>
-              )}
-              {selectedPlace.details.paymentNotes && (
-                <span className="px-2 py-1 rounded-full bg-gray-100">{selectedPlace.details.paymentNotes}</span>
-              )}
-            </div>
-          )}
-
           {selectedLinks.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-3 gap-2">
               {selectedLinks.map((link) => (
                 <a
                   key={`${link.type}:${link.url}`}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`py-2 px-3 text-white rounded-lg text-center font-medium text-sm ${linkClass(link.type)}`}
+                  className={`px-2 py-2 text-center text-xs font-black uppercase ${linkClass(link.type)}`}
                 >
                   {link.label}
                 </a>
@@ -501,24 +642,141 @@ export default function Home() {
             </div>
           )}
 
-          {selectedPlace.sources.length > 0 && (
-            <div className="mt-4 border-t border-gray-100 pt-3">
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Sources</div>
-              <div className="flex flex-wrap gap-2 text-xs">
-              {selectedPlace.sources.slice(0, 3).map((source) => (
-                <a
-                  key={`${source.fieldName}:${source.sourceUrl}`}
-                  href={source.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md bg-gray-100 px-2 py-1 text-gray-600"
-                >
-                  {sourceLabel(source)}
-                </a>
-              ))}
-              </div>
-            </div>
-          )}
+          <Accordion type="multiple" className="mt-3 overflow-hidden border-[3px] border-black bg-white shadow-[5px_5px_0_#08080a]">
+            {(selectedPlace.address || selectedPlace.description || selectedPlace.notes || userLocation) && (
+              <AccordionItem value="overview" className="px-2.5">
+                <AccordionTrigger>
+                  <span className="flex items-center gap-2">
+                    Overview
+                    {selectedPlace.address && (
+                      <span className="border-2 border-black bg-[var(--vb-acid)] px-1.5 py-0 text-[10px] font-black text-black">
+                        Address
+                      </span>
+                    )}
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    {selectedPlace.address && <DetailLine label="Address">{selectedPlace.address}</DetailLine>}
+                    {userLocation && selectedPlace.lat && (
+                      <DetailLine label="Distance">{(getDistanceFromUser(selectedPlace)! * 1000).toFixed(0)}m away</DetailLine>
+                    )}
+                    {(selectedPlace.description || selectedPlace.notes) && (
+                      <DetailLine label="Why it is here">{selectedPlace.description || selectedPlace.notes}</DetailLine>
+                    )}
+                    {selectedPlace.description && selectedPlace.notes && <DetailLine label="Notes">{selectedPlace.notes}</DetailLine>}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {(selectedPlace.details.bestTimeToVisit ||
+              selectedPlace.details.reservationGuidance ||
+              selectedPlace.details.bookingNotes ||
+              selectedPlace.details.openingHours.length > 0) && (
+              <AccordionItem value="visit" className="px-2.5">
+                <AccordionTrigger>Visit plan</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-2">
+                    {selectedPlace.details.bestTimeToVisit && (
+                      <DetailLine label="Best time">{selectedPlace.details.bestTimeToVisit}</DetailLine>
+                    )}
+                    {(selectedPlace.details.reservationGuidance || selectedPlace.details.bookingNotes) && (
+                      <DetailLine label="Booking">
+                        {selectedPlace.details.reservationGuidance && <p>{selectedPlace.details.reservationGuidance}</p>}
+                        {selectedPlace.details.bookingNotes && <p>{selectedPlace.details.bookingNotes}</p>}
+                      </DetailLine>
+                    )}
+                    {selectedPlace.details.openingHours.length > 0 && (
+                      <DetailLine label="Hours">{selectedPlace.details.openingHours.slice(0, 5).join(" · ")}</DetailLine>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {(selectedVisitTips.length > 0 || selectedMenuHighlights.length > 0) && (
+              <AccordionItem value="highlights" className="px-2.5">
+                <AccordionTrigger>Tips and menu</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-2">
+                    {selectedVisitTips.length > 0 && (
+                      <DetailLine label="Tips">
+                        <DetailList items={selectedVisitTips} />
+                      </DetailLine>
+                    )}
+                    {selectedMenuHighlights.length > 0 && (
+                      <DetailLine label="Menu">
+                        <DetailList items={selectedMenuHighlights} />
+                      </DetailLine>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {(selectedPlace.details.dietaryTags.length > 0 ||
+              selectedPlace.details.accessibilityNotes ||
+              selectedPlace.details.paymentNotes) && (
+              <AccordionItem value="practical" className="px-2.5">
+                <AccordionTrigger>Practical details</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-2">
+                    {selectedPlace.details.dietaryTags.length > 0 && (
+                      <DetailLine label="Dietary">
+                        <div className="flex flex-wrap gap-1.5 text-xs text-gray-700">
+                          {selectedPlace.details.dietaryTags.map((tag) => (
+                            <span key={tag} className="brutal-chip bg-[var(--vb-acid)] px-1.5 py-0.5">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </DetailLine>
+                    )}
+                    {selectedPlace.details.accessibilityNotes && (
+                      <DetailLine label="Accessibility">{selectedPlace.details.accessibilityNotes}</DetailLine>
+                    )}
+                    {selectedPlace.details.paymentNotes && (
+                      <DetailLine label="Payment">{selectedPlace.details.paymentNotes}</DetailLine>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {selectedPlace.sources.length > 0 && (
+              <AccordionItem value="sources" className="px-2.5">
+                <AccordionTrigger>
+                  <span className="flex items-center gap-2">
+                    Sources
+                    <span className="border-2 border-black bg-[var(--vb-cyan)] px-1.5 py-0 text-[10px] font-black text-black">
+                      {selectedPlace.sources.length}
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-1.5 text-[11px]">
+                    {selectedPlace.sources.slice(0, 5).map((source) => (
+                      <a
+                        key={`${source.fieldName}:${source.sourceUrl}`}
+                        href={source.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="brutal-chip bg-white px-1.5 py-0.5 font-black uppercase text-black transition hover:bg-[var(--vb-acid)]"
+                      >
+                        {sourceLabel(source)}
+                      </a>
+                    ))}
+                  </div>
+                  {selectedPlace.lastEnrichedAt && (
+                    <div className="mt-2 inline-block bg-black px-2 py-0.5 text-[11px] font-black uppercase text-white">
+                      Last enriched {selectedPlace.lastEnrichedAt.slice(0, 10)}
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            )}
+          </Accordion>
         </div>
       )}
 

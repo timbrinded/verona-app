@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fff8e6;
+  --foreground: #08080a;
+  --vb-ink: #08080a;
+  --vb-paper: #fff8e6;
+  --vb-surface: #ffffff;
+  --vb-acid: #e6ff00;
+  --vb-cyan: #00e5ff;
+  --vb-pink: #ff3df2;
+  --vb-orange: #ff7a00;
+  --vb-lime: #28ff8a;
+  --vb-muted: #5e6070;
+  --vb-border: 3px solid var(--vb-ink);
+  --vb-shadow-sm: 3px 3px 0 var(--vb-ink);
+  --vb-shadow-md: 5px 5px 0 var(--vb-ink);
+  --vb-shadow-lg: 8px 8px 0 var(--vb-ink);
 }
 
 @theme inline {
@@ -27,4 +40,144 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.verona-brutal {
+  color: var(--vb-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.verona-brutal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(8, 8, 10, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(8, 8, 10, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mix-blend-mode: multiply;
+}
+
+.brutal-panel {
+  border: var(--vb-border);
+  background: var(--vb-surface);
+  box-shadow: var(--vb-shadow-md);
+}
+
+.brutal-control {
+  border: var(--vb-border);
+  background: var(--vb-surface);
+  box-shadow: var(--vb-shadow-sm);
+  color: var(--vb-ink);
+}
+
+.brutal-control:focus-visible {
+  outline: 4px solid var(--vb-pink);
+  outline-offset: 2px;
+}
+
+.brutal-chip {
+  border: 2px solid var(--vb-ink);
+  background: var(--vb-paper);
+  box-shadow: 2px 2px 0 var(--vb-ink);
+  color: var(--vb-ink);
+}
+
+.brutal-action {
+  border: var(--vb-border);
+  box-shadow: var(--vb-shadow-sm);
+  color: var(--vb-ink);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.brutal-action:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--vb-shadow-md);
+  filter: saturate(1.12);
+}
+
+.brutal-action:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--vb-ink);
+}
+
+.brutal-action-dark {
+  background: var(--vb-ink);
+  color: #ffffff;
+}
+
+.brutal-vibe {
+  border: 3px solid var(--vb-ink);
+  background: var(--vb-acid);
+  box-shadow: 3px 3px 0 var(--vb-pink);
+  color: var(--vb-ink);
+}
+
+.accordion-content[data-state="open"] {
+  animation: accordion-down 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.accordion-content[data-state="closed"] {
+  animation: accordion-up 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popover-content[data-state="open"] {
+  animation: popover-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popover-content[data-state="closed"] {
+  animation: popover-out 140ms ease-in;
+}
+
+[data-radix-popper-content-wrapper] {
+  z-index: 90 !important;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popover-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
 }
