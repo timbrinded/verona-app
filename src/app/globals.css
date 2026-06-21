@@ -118,6 +118,15 @@ body {
   color: var(--vb-ink);
 }
 
+.editorial-place-title {
+  font-family: var(--font-editorial-serif), "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.8rem, 8vw, 2.8rem);
+  font-weight: 300;
+  line-height: 0.86;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
 .accordion-content[data-state="open"] {
   animation: accordion-down 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }

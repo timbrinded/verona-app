@@ -613,7 +613,7 @@ export default function Home() {
               {CATEGORY_ICONS[selectedPlace.category] || "📍"}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-black uppercase leading-none text-black break-words">{selectedPlace.name}</h2>
+              <h2 className="editorial-place-title text-black break-words">{selectedPlace.name}</h2>
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-black uppercase text-black">
                 <span className="brutal-chip px-1.5 py-0.5">{selectedPlace.category}</span>
                 {selectedPlace.price && <span className="brutal-chip bg-[var(--vb-cyan)] px-1.5 py-0.5">{selectedPlace.price}</span>}
