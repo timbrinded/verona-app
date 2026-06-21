@@ -4,49 +4,89 @@
     "objective": "Find high-quality Verona osterie, trattorie, and fine dining restaurants that locals or trusted guides recommend, prioritizing active venues near central Verona with direct booking or official contact details.",
     "queries": [
       "best osteria Verona locals",
+      "osteria tradizionale Verona centro storico",
+      "osteria Via Sottoriva Verona locals",
+      "osteria San Zeno Verona locals",
+      "osteria Veronetta Verona locals",
       "Michelin Verona restaurant Bib Gourmand",
-      "Verona trattoria local guide"
+      "fine dining Verona tasting menu",
+      "romantic restaurant Verona fine dining",
+      "seafood restaurant Verona high rated",
+      "Verona trattoria local guide",
+      "trattoria tipica Verona centro",
+      "pastificio ravioli Verona centro"
     ],
-    "maxResults": 20
+    "maxResults": 80
   },
   {
     "id": "wine-cocktail-pub",
     "objective": "Find Verona wine bars, cocktail bars, craft beer bars, and pubs with strong recent reviews, authentic local character, and reliable official or map profiles.",
     "queries": [
       "Verona wine bar locals",
+      "enoteca Verona centro storico",
+      "wine bar Piazza Erbe Verona",
+      "natural wine Verona",
       "best cocktail bars Verona",
-      "craft beer pub Verona"
+      "cocktail bar Verona centro storico",
+      "cocktail bar Piazza Bra Verona",
+      "best aperitivo Verona locals",
+      "aperitivo San Zeno Verona",
+      "craft beer pub Verona",
+      "birreria Verona craft beer",
+      "pub Verona centro storico"
     ],
-    "maxResults": 20
+    "maxResults": 80
   },
   {
     "id": "gelato-cafe",
     "objective": "Find Verona gelaterie and cafes that are worth adding to a travel map, with recent operating evidence and trustworthy review or guide coverage.",
     "queries": [
       "best gelato Verona locals",
+      "gelateria artigianale Verona centro",
+      "gelato San Zeno Verona",
+      "gelato Veronetta Verona",
       "Verona cafe specialty coffee",
-      "gelateria artigianale Verona"
+      "specialty coffee Verona",
+      "cafe Verona centro historic",
+      "pasticceria Verona centro",
+      "breakfast cafe Verona locals"
     ],
-    "maxResults": 20
+    "maxResults": 60
   },
   {
     "id": "sights-viewpoints",
     "objective": "Find Verona sights, churches, museums, gardens, viewpoints, and ticketed attractions that improve map coverage beyond the obvious landmarks.",
     "queries": [
       "hidden sights Verona",
+      "Verona churches to visit",
+      "Verona museums tickets official",
+      "Verona gardens historic",
+      "Verona Roman ruins archaeological sites",
+      "Verona courtyards palaces to visit",
+      "Verona artisan shops historic center",
       "Verona viewpoints gardens churches",
-      "Verona museum tickets official"
+      "best viewpoints Verona Italy",
+      "panoramic view Verona",
+      "viewpoint near Castel San Pietro Verona",
+      "Lungadige Verona viewpoints"
     ],
-    "maxResults": 20
+    "maxResults": 80
   },
   {
     "id": "central-gaps",
     "objective": "Find undercovered central Verona places near Piazza delle Erbe, San Zeno, Veronetta, Castelvecchio, and the Arena that would make the map feel dense and useful for walking.",
     "queries": [
       "Piazza delle Erbe Verona restaurants locals",
+      "restaurants near Arena di Verona locals",
+      "restaurants near Castelvecchio Verona locals",
+      "restaurants near Ponte Pietra Verona locals",
       "San Zeno Verona bars restaurants",
-      "Veronetta Verona food drink guide"
+      "Veronetta Verona food drink guide",
+      "Borgo Trento Verona restaurants",
+      "Cittadella Verona restaurants bars",
+      "Porta Nuova Verona restaurants",
+      "Borgo Venezia Verona restaurants"
     ],
-    "maxResults": 20
+    "maxResults": 80
   }
 ]

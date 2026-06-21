@@ -25,20 +25,79 @@ interface SearchResponse {
   places?: GooglePlace[];
 }
 
-const SEARCHES = [
-  { query: "best osteria in Verona Italy locals", category: "Osteria" },
-  { query: "best trattoria in Verona Italy locals", category: "Trattoria" },
-  { query: "best restaurants Verona Italy Michelin Bib Gourmand", category: "Fine Dining" },
-  { query: "best wine bars Verona Italy", category: "Wine Bar" },
-  { query: "best cocktail bars Verona Italy", category: "Cocktail Bar" },
-  { query: "best craft beer pubs Verona Italy", category: "Pub" },
-  { query: "best gelato Verona Italy", category: "Gelato" },
-  { query: "best cafes Verona Italy specialty coffee", category: "Aperitivo" },
-  { query: "hidden sights Verona Italy churches museums gardens", category: "Sights" },
-  { query: "best viewpoints Verona Italy", category: "Viewpoint" },
-  { query: "restaurants near Piazza delle Erbe Verona locals", category: "Osteria" },
-  { query: "bars restaurants San Zeno Verona locals", category: "Pub" },
-  { query: "Veronetta Verona restaurants bars locals", category: "Osteria" },
+interface SearchSpec {
+  query: string;
+  category: string;
+  minRating?: number;
+  minReviews?: number;
+  radius?: number;
+}
+
+const SEARCHES: SearchSpec[] = [
+  { query: "best osteria in Verona Italy locals", category: "Osteria", minRating: 4.3, minReviews: 40 },
+  { query: "osteria tradizionale Verona centro storico", category: "Osteria", minRating: 4.3, minReviews: 35 },
+  { query: "osteria Via Sottoriva Verona locals", category: "Osteria", minRating: 4.2, minReviews: 25 },
+  { query: "osteria San Zeno Verona locals", category: "Osteria", minRating: 4.2, minReviews: 25 },
+  { query: "osteria Veronetta Verona locals", category: "Osteria", minRating: 4.2, minReviews: 20 },
+  { query: "osteria Borgo Trento Verona locals", category: "Osteria", minRating: 4.2, minReviews: 20 },
+  { query: "osteria Cittadella Verona", category: "Osteria", minRating: 4.2, minReviews: 20 },
+  { query: "best trattoria in Verona Italy locals", category: "Trattoria", minRating: 4.3, minReviews: 40 },
+  { query: "trattoria tipica Verona centro", category: "Trattoria", minRating: 4.2, minReviews: 30 },
+  { query: "trattoria San Zeno Verona", category: "Trattoria", minRating: 4.2, minReviews: 25 },
+  { query: "trattoria Veronetta Verona", category: "Trattoria", minRating: 4.2, minReviews: 20 },
+  { query: "pastificio ravioli Verona centro", category: "Trattoria", minRating: 4.4, minReviews: 20 },
+  { query: "best restaurants Verona Italy Michelin Bib Gourmand", category: "Fine Dining", minRating: 4.3, minReviews: 30 },
+  { query: "fine dining Verona tasting menu", category: "Fine Dining", minRating: 4.4, minReviews: 25 },
+  { query: "romantic restaurant Verona fine dining", category: "Fine Dining", minRating: 4.3, minReviews: 30 },
+  { query: "seafood restaurant Verona high rated", category: "Fine Dining", minRating: 4.3, minReviews: 30 },
+  { query: "modern restaurant Verona centro", category: "Fine Dining", minRating: 4.3, minReviews: 25 },
+  { query: "best wine bars Verona Italy", category: "Wine Bar", minRating: 4.4, minReviews: 25 },
+  { query: "enoteca Verona centro storico", category: "Wine Bar", minRating: 4.4, minReviews: 20 },
+  { query: "wine bar Piazza Erbe Verona", category: "Wine Bar", minRating: 4.2, minReviews: 20 },
+  { query: "wine bar Veronetta Verona", category: "Wine Bar", minRating: 4.2, minReviews: 15 },
+  { query: "natural wine Verona", category: "Wine Bar", minRating: 4.2, minReviews: 10 },
+  { query: "best cocktail bars Verona Italy", category: "Cocktail Bar", minRating: 4.4, minReviews: 25 },
+  { query: "cocktail bar Verona centro storico", category: "Cocktail Bar", minRating: 4.3, minReviews: 20 },
+  { query: "cocktail bar Piazza Bra Verona", category: "Cocktail Bar", minRating: 4.2, minReviews: 20 },
+  { query: "cocktail bar Veronetta Verona", category: "Cocktail Bar", minRating: 4.2, minReviews: 15 },
+  { query: "best aperitivo Verona locals", category: "Aperitivo", minRating: 4.3, minReviews: 25 },
+  { query: "aperitivo Piazza Erbe Verona", category: "Aperitivo", minRating: 4.2, minReviews: 20 },
+  { query: "aperitivo San Zeno Verona", category: "Aperitivo", minRating: 4.2, minReviews: 15 },
+  { query: "aperitivo Veronetta Verona", category: "Aperitivo", minRating: 4.2, minReviews: 15 },
+  { query: "best craft beer pubs Verona Italy", category: "Pub", minRating: 4.3, minReviews: 25 },
+  { query: "birreria Verona craft beer", category: "Pub", minRating: 4.3, minReviews: 20 },
+  { query: "pub Verona centro storico", category: "Pub", minRating: 4.2, minReviews: 30 },
+  { query: "pub San Zeno Verona", category: "Pub", minRating: 4.2, minReviews: 20 },
+  { query: "best gelato Verona Italy", category: "Gelato", minRating: 4.4, minReviews: 40 },
+  { query: "gelateria artigianale Verona centro", category: "Gelato", minRating: 4.4, minReviews: 25 },
+  { query: "gelato San Zeno Verona", category: "Gelato", minRating: 4.3, minReviews: 20 },
+  { query: "gelato Veronetta Verona", category: "Gelato", minRating: 4.3, minReviews: 15 },
+  { query: "best cafes Verona Italy specialty coffee", category: "Aperitivo", minRating: 4.4, minReviews: 25 },
+  { query: "specialty coffee Verona", category: "Aperitivo", minRating: 4.4, minReviews: 15 },
+  { query: "cafe Verona centro historic", category: "Aperitivo", minRating: 4.2, minReviews: 30 },
+  { query: "pasticceria Verona centro", category: "Aperitivo", minRating: 4.3, minReviews: 30 },
+  { query: "breakfast cafe Verona locals", category: "Aperitivo", minRating: 4.3, minReviews: 25 },
+  { query: "hidden sights Verona Italy churches museums gardens", category: "Sights", minRating: 4.2, minReviews: 20 },
+  { query: "Verona churches to visit", category: "Sights", minRating: 4.2, minReviews: 20 },
+  { query: "Verona museums tickets official", category: "Sights", minRating: 4.1, minReviews: 20 },
+  { query: "Verona gardens historic", category: "Sights", minRating: 4.2, minReviews: 15 },
+  { query: "Verona Roman ruins archaeological sites", category: "Sights", minRating: 4.1, minReviews: 15 },
+  { query: "Verona courtyards palaces to visit", category: "Sights", minRating: 4.1, minReviews: 10 },
+  { query: "Verona artisan shops historic center", category: "Sights", minRating: 4.3, minReviews: 15 },
+  { query: "best viewpoints Verona Italy", category: "Viewpoint", minRating: 4.3, minReviews: 20 },
+  { query: "panoramic view Verona", category: "Viewpoint", minRating: 4.2, minReviews: 15 },
+  { query: "viewpoint near Castel San Pietro Verona", category: "Viewpoint", minRating: 4.2, minReviews: 15 },
+  { query: "Lungadige Verona viewpoints", category: "Viewpoint", minRating: 4.1, minReviews: 10 },
+  { query: "restaurants near Piazza delle Erbe Verona locals", category: "Osteria", minRating: 4.2, minReviews: 30 },
+  { query: "restaurants near Arena di Verona locals", category: "Osteria", minRating: 4.2, minReviews: 35 },
+  { query: "restaurants near Castelvecchio Verona locals", category: "Trattoria", minRating: 4.2, minReviews: 25 },
+  { query: "restaurants near Ponte Pietra Verona locals", category: "Osteria", minRating: 4.2, minReviews: 25 },
+  { query: "bars restaurants San Zeno Verona locals", category: "Pub", minRating: 4.2, minReviews: 20 },
+  { query: "Veronetta Verona restaurants bars locals", category: "Osteria", minRating: 4.2, minReviews: 15 },
+  { query: "Borgo Trento Verona restaurants", category: "Trattoria", minRating: 4.2, minReviews: 20 },
+  { query: "Cittadella Verona restaurants bars", category: "Aperitivo", minRating: 4.2, minReviews: 20 },
+  { query: "Porta Nuova Verona restaurants", category: "Trattoria", minRating: 4.2, minReviews: 25 },
+  { query: "Borgo Venezia Verona restaurants", category: "Trattoria", minRating: 4.2, minReviews: 20, radius: 5200 },
 ];
 
 function price(value: string | undefined): string {
@@ -65,7 +124,7 @@ function isOpen(place: GooglePlace): boolean {
   return !place.businessStatus || place.businessStatus === "OPERATIONAL";
 }
 
-async function searchPlaces(apiKey: string, query: string): Promise<GooglePlace[]> {
+async function searchPlaces(apiKey: string, search: SearchSpec): Promise<GooglePlace[]> {
   const response = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
     headers: {
@@ -89,11 +148,11 @@ async function searchPlaces(apiKey: string, query: string): Promise<GooglePlace[
       ].join(","),
     },
     body: JSON.stringify({
-      textQuery: query,
+      textQuery: search.query,
       locationBias: {
         circle: {
           center: { latitude: 45.4384, longitude: 10.9916 },
-          radius: 3500,
+          radius: search.radius ?? 4200,
         },
       },
       pageSize: 20,
@@ -103,7 +162,7 @@ async function searchPlaces(apiKey: string, query: string): Promise<GooglePlace[
   });
 
   if (!response.ok) {
-    throw new Error(`Google Places search failed for "${query}": ${response.status} ${await response.text()}`);
+    throw new Error(`Google Places search failed for "${search.query}": ${response.status} ${await response.text()}`);
   }
 
   const payload = (await response.json()) as SearchResponse;
@@ -134,6 +193,14 @@ function rowFromPlace(place: GooglePlace, category: string, query: string): CsvR
   };
 }
 
+function meetsSearchQuality(place: GooglePlace, search: SearchSpec): boolean {
+  const rating = place.rating ?? 0;
+  const reviews = place.userRatingCount ?? 0;
+  if (search.minRating && rating < search.minRating) return false;
+  if (search.minReviews && reviews < search.minReviews) return false;
+  return true;
+}
+
 async function main(): Promise<void> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY is required");
@@ -148,11 +215,12 @@ async function main(): Promise<void> {
   const rows: CsvRow[] = [];
 
   for (const search of SEARCHES) {
-    const places = await searchPlaces(apiKey, search.query);
+    const places = await searchPlaces(apiKey, search);
     for (const place of places) {
       const name = place.displayName?.text ?? "";
       const normalized = normalize(name);
       if (!name || !isOpen(place)) continue;
+      if (!meetsSearchQuality(place, search)) continue;
       if (existingNames.has(normalized) || seenNames.has(normalized)) continue;
       if (place.googleMapsUri && existingMaps.has(place.googleMapsUri)) continue;
 

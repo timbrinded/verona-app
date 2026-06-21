@@ -22,6 +22,7 @@
     "enrich:google-candidates": "tsx scripts/enrichment/google-candidates.ts",
     "enrich:prepare": "tsx scripts/enrichment/prepare.ts",
     "enrich:run": "tsx scripts/enrichment/run.ts",
+    "enrich:parallel-json-to-csv": "tsx scripts/enrichment/parallel-json-to-csv.ts",
     "enrich:merge-candidates": "tsx scripts/enrichment/merge-candidates.ts",
     "enrich:import": "tsx scripts/enrichment/import.ts",
     "enrich:promote-seed": "tsx scripts/enrichment/promote-seed.ts"
