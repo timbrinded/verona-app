@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Place, PlaceLink } from "@/lib/place-types";
@@ -47,6 +47,12 @@ interface GeolocateEvent {
     longitude?: number;
     latitude?: number;
   };
+}
+
+interface PhotoRef {
+  url: string;
+  host: string;
+  isImage: boolean;
 }
 
 function normalizeCategory(category: string): string {
@@ -107,6 +113,45 @@ function textList(value: string): string[] {
     .split(/[;\n|]/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function urlFromPhotoRef(value: string): string {
+  return value.match(/https?:\/\/[^\s)]+/i)?.[0]?.replace(/[),.]+$/, "") ?? "";
+}
+
+function photoHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "photo source";
+  }
+}
+
+function isDirectImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return /\.(?:avif|gif|jpe?g|png|webp)$/i.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function photoRefs(place: Place): PhotoRef[] {
+  const seen = new Set<string>();
+  return place.details.photoUrls
+    .map(urlFromPhotoRef)
+    .filter(Boolean)
+    .filter((url) => {
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    })
+    .slice(0, 8)
+    .map((url) => ({
+      url,
+      host: photoHost(url),
+      isImage: isDirectImageUrl(url),
+    }));
 }
 
 function sourceLabel(source: Place["sources"][number]): string {
@@ -342,6 +387,81 @@ function DetailLine({ label, children }: { label: string; children: ReactNode })
   );
 }
 
+function PhotoCarousel({ place, isOnline }: { place: Place; isOnline: boolean }) {
+  const refs = useMemo(() => photoRefs(place), [place]);
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(() => new Set());
+  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(() => new Set());
+
+  if (!isOnline || refs.length === 0) return null;
+
+  const visibleRefs = refs.filter((ref) => !ref.isImage || !failedUrls.has(ref.url));
+  if (visibleRefs.length === 0) return null;
+
+  return (
+    <section className="mt-3" aria-label={`${place.name} photos`}>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="bg-black px-2 py-0.5 text-[10px] font-black uppercase text-white">
+          Photos
+        </div>
+        <div className="text-[10px] font-black uppercase text-gray-600">
+          Online only
+        </div>
+      </div>
+      <div className="flex snap-x gap-2 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch]">
+        {visibleRefs.map((ref, index) => (
+          <a
+            key={ref.url}
+            href={ref.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block h-32 min-w-[72%] snap-start overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0_#08080a] sm:min-w-[16rem]"
+          >
+            {ref.isImage ? (
+              <>
+                {!loadedUrls.has(ref.url) && (
+                  <div className="absolute inset-0 flex flex-col justify-end bg-[var(--vb-paper)] p-3 text-black">
+                    <div className="text-[10px] font-black uppercase">Loading photo</div>
+                    <div className="mt-0.5 break-words text-lg font-black leading-none">{ref.host}</div>
+                  </div>
+                )}
+                {/* External URLs are intentionally not optimized or stored by this app. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={ref.url}
+                  alt={`${place.name} photo ${index + 1}`}
+                  className={`h-full w-full object-cover transition duration-200 group-hover:scale-[1.03] ${
+                    loadedUrls.has(ref.url) ? "opacity-100" : "opacity-0"
+                  }`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onLoad={() => {
+                    setLoadedUrls((current) => new Set(current).add(ref.url));
+                  }}
+                  onError={() => {
+                    setFailedUrls((current) => new Set(current).add(ref.url));
+                  }}
+                />
+              </>
+            ) : (
+              <div className="flex h-full flex-col justify-between bg-[var(--vb-cyan)] p-3 text-black">
+                <div className="text-3xl leading-none">↗</div>
+                <div>
+                  <div className="text-[10px] font-black uppercase">Photo source</div>
+                  <div className="mt-0.5 break-words text-lg font-black leading-none">{ref.host}</div>
+                </div>
+              </div>
+            )}
+            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2 bg-[rgba(255,248,230,0.92)] px-2 py-1 text-[10px] font-black uppercase text-black backdrop-blur-sm">
+              <span className="truncate">{ref.host}</span>
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" strokeWidth={3} />
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -354,6 +474,18 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const loadPlaces = async () => {
@@ -643,6 +775,8 @@ export default function Home() {
               ))}
             </div>
           )}
+
+          <PhotoCarousel key={selectedPlace.id} place={selectedPlace} isOnline={isOnline} />
 
           <Accordion type="multiple" className="mt-3 overflow-hidden border-[3px] border-black bg-white shadow-[5px_5px_0_#08080a]">
             {(selectedPlace.address || selectedPlace.description || selectedPlace.notes || userLocation) && (
