@@ -1,9 +1,11 @@
-import { readFile } from "node:fs/promises";
-import { basename } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { InStatement } from "@libsql/client";
 import { libsql } from "../../src/db/client";
 import { parseCsv, type CsvRow } from "./csv";
+import { resolveBookingUpdate } from "./booking";
+import { methodologyScore } from "./scoring";
 
 interface Citation {
   fieldName: string;
@@ -13,10 +15,56 @@ interface Citation {
   confidence: number;
 }
 
+interface ImportTargets {
+  ids: string[];
+  existingIds: string[];
+  newIds: string[];
+}
+
+interface ExistingPlace {
+  id: string;
+  booking: string;
+  dataQuality: Record<string, unknown>;
+}
+
+interface ImportOptions {
+  source: string;
+  runId: string;
+  allowNew: boolean;
+  reportPath: string;
+}
+
+interface ImportReportRow {
+  id: string;
+  name: string;
+  action: "inserted" | "updated";
+  bookingAction: string;
+  bookingReason: string;
+  confidence: number;
+  missing: string[];
+}
+
+interface ImportReport {
+  source: string;
+  runId: string;
+  importedRows: number;
+  insertedRows: number;
+  updatedRows: number;
+  bookingCleared: number;
+  bookingReplaced: number;
+  lowConfidenceRows: ImportReportRow[];
+  rowsMissingRequiredQa: ImportReportRow[];
+  rows: ImportReportRow[];
+}
+
 function get(row: CsvRow, names: string[]): string {
   for (const name of names) {
     const value = row[name];
-    if (value?.trim()) return value.trim();
+    const trimmed = value?.trim();
+    if (!trimmed) continue;
+    if (["null", "n/a", "na", "none", "not available", "not specified"].includes(trimmed.toLowerCase())) continue;
+    if (/_url_assessments$/i.test(trimmed)) continue;
+    return trimmed;
   }
   return "";
 }
@@ -24,6 +72,12 @@ function get(row: CsvRow, names: string[]): string {
 function numberValue(value: string): number {
   const parsed = Number(value.replace(/,/g, ""));
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function nullableNumberValue(value: string): number | null {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(/,/g, ""));
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function stringArray(value: string): string[] {
@@ -52,6 +106,18 @@ function socialLinks(row: CsvRow): Record<string, string> {
       ["tiktok", get(row, ["social_tiktok", "tiktok"])],
     ].filter((entry): entry is [string, string] => entry[1].length > 0),
   );
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
+  if (typeof value !== "string" || !value.trim()) return {};
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
 }
 
 export function citations(value: string): Citation[] {
@@ -91,7 +157,36 @@ export function citations(value: string): Citation[] {
   }));
 }
 
-function addLinkStatement(statements: InStatement[], placeId: string, type: string, label: string, url: string): void {
+function slugBase(name: string, id: string): string {
+  const slug = name
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+  return slug || id.replace(/-/g, "").slice(-8);
+}
+
+function normalizeCategory(category: string): string {
+  return category === "Craft Beer" ? "Pub" : category;
+}
+
+function addLinkStatement(
+  statements: InStatement[],
+  placeId: string,
+  type: string,
+  label: string,
+  url: string,
+  replace = false,
+): void {
+  if (replace) {
+    statements.push({
+      sql: "DELETE FROM place_links WHERE place_id = ? AND type = ?",
+      args: [placeId, type],
+    });
+  }
   if (!url) return;
 
   statements.push({
@@ -130,44 +225,163 @@ export function validateEnrichmentRows(rows: CsvRow[]): string[] {
   return ids;
 }
 
-async function existingPlaceIds(ids: string[]): Promise<Set<string>> {
+export function validateImportTargets(rows: CsvRow[], knownIds: Set<string>, allowNew: boolean): ImportTargets {
+  const ids = validateEnrichmentRows(rows);
+  const newIds = ids.filter((id) => !knownIds.has(id));
+  if (newIds.length > 0 && !allowNew) {
+    throw new Error(`Invalid enrichment CSV: unknown place ids ${newIds.join(", ")}`);
+  }
+
+  return {
+    ids,
+    existingIds: ids.filter((id) => knownIds.has(id)),
+    newIds,
+  };
+}
+
+async function existingPlaces(ids: string[]): Promise<Map<string, ExistingPlace>> {
+  if (ids.length === 0) return new Map();
+
   const placeholders = ids.map(() => "?").join(", ");
   const result = await libsql.execute({
-    sql: `SELECT id FROM places WHERE id IN (${placeholders})`,
+    sql: `SELECT id, booking, data_quality FROM places WHERE id IN (${placeholders})`,
     args: ids,
   });
 
-  return new Set(result.rows.map((row) => String(row.id)));
+  return new Map(
+    result.rows.map((row) => [
+      String(row.id),
+      {
+        id: String(row.id),
+        booking: String(row.booking ?? ""),
+        dataQuality: recordValue(row.data_quality),
+      },
+    ]),
+  );
 }
 
-function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: string): void {
-  const placeId = get(row, ["id", "place_id"]);
+function rowConfidence(row: CsvRow): { confidence: number; vibe: number; components: Record<string, unknown> } {
+  const scoreText = get(row, ["score_components", "methodology_score_components", "confidence_components"]);
+  const methodology = methodologyScore(scoreText);
+  const explicitConfidence = numberValue(get(row, ["confidence", "confidence_score"]));
+  const explicitVibe = numberValue(get(row, ["vibe_score", "vibe"]));
 
+  return {
+    confidence: explicitConfidence > 1 ? explicitConfidence / 100 : explicitConfidence || methodology.confidence,
+    vibe: Math.trunc(explicitVibe > 0 && explicitVibe <= 1 ? explicitVibe * 20 : explicitVibe || methodology.vibe),
+    components: scoreText ? { ...methodology.components } : {},
+  };
+}
+
+function importDataQuality(
+  row: CsvRow,
+  existing: ExistingPlace | undefined,
+  bookingReason: string,
+): Record<string, unknown> {
+  const score = rowConfidence(row);
+
+  return {
+    ...(existing?.dataQuality ?? {}),
+    source: "parallel",
+    lastImportKind: existing ? "refresh" : "new_candidate",
+    bookingValidation: bookingReason,
+    scoreComponents: score.components,
+  };
+}
+
+function requireNewPlaceValue(row: CsvRow, names: string[], label: string): string {
+  const value = get(row, names);
+  if (!value) {
+    throw new Error(`Invalid new enrichment row ${get(row, ["id", "place_id"])}: missing ${label}`);
+  }
+  return value;
+}
+
+function addNewPlaceStatement(
+  statements: InStatement[],
+  row: CsvRow,
+  bookingUrl: string,
+  dataQuality: Record<string, unknown>,
+): void {
+  const placeId = get(row, ["id", "place_id"]);
+  const name = requireNewPlaceValue(row, ["official_name", "name"], "name");
+  const sourceCategory = requireNewPlaceValue(row, ["category", "place_category"], "category");
+  const category = normalizeCategory(sourceCategory);
+  const score = rowConfidence(row);
+  const lat = nullableNumberValue(get(row, ["lat", "latitude"]));
+  const lng = nullableNumberValue(get(row, ["lng", "longitude", "lon"]));
+
+  statements.push({
+    sql: `
+      INSERT INTO places (
+        id, slug, name, category, source_category, rating, reviews, price, distance, vibe,
+        confidence, address, phone, website, google_maps, booking, notes, description,
+        lat, lng, is_home_base, status, data_quality, updated_at, last_enriched_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'active', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `,
+    args: [
+      placeId,
+      slugBase(name, placeId),
+      name,
+      category,
+      sourceCategory,
+      numberValue(get(row, ["rating"])),
+      Math.trunc(numberValue(get(row, ["review_count", "reviews"]))),
+      get(row, ["price_level", "price"]),
+      numberValue(get(row, ["distance", "distance_km"])),
+      score.vibe,
+      score.confidence,
+      get(row, ["formatted_address", "address"]),
+      get(row, ["phone", "phone_number"]),
+      get(row, ["website", "official_website"]),
+      get(row, ["google_maps_url", "google_maps", "maps_url"]),
+      bookingUrl,
+      get(row, ["notes", "travel_note", "why_visit"]),
+      get(row, ["description", "summary"]),
+      lat,
+      lng,
+      JSON.stringify(dataQuality),
+    ],
+  });
+}
+
+function addRefreshPlaceStatement(
+  statements: InStatement[],
+  row: CsvRow,
+  bookingUpdate: ReturnType<typeof resolveBookingUpdate>,
+  dataQuality: Record<string, unknown>,
+): void {
+  const placeId = get(row, ["id", "place_id"]);
   const phone = get(row, ["phone", "phone_number"]);
   const website = get(row, ["website", "official_website"]);
   const googleMaps = get(row, ["google_maps_url", "google_maps", "maps_url"]);
-  const booking = get(row, ["booking_url", "booking"]);
-  const menuUrl = get(row, ["menu_url", "menu"]);
   const rating = numberValue(get(row, ["rating"]));
   const reviewCount = Math.trunc(numberValue(get(row, ["review_count", "reviews"])));
   const price = get(row, ["price_level", "price"]);
   const address = get(row, ["formatted_address", "address"]);
   const description = get(row, ["description", "summary"]);
-  const confidence = numberValue(get(row, ["confidence"]));
+  const score = rowConfidence(row);
+  const lat = nullableNumberValue(get(row, ["lat", "latitude"]));
+  const lng = nullableNumberValue(get(row, ["lng", "longitude", "lon"]));
 
   statements.push({
     sql: `
       UPDATE places SET
-        phone = CASE WHEN phone = '' AND ? != '' THEN ? ELSE phone END,
-        website = CASE WHEN website = '' AND ? != '' THEN ? ELSE website END,
-        google_maps = CASE WHEN google_maps = '' AND ? != '' THEN ? ELSE google_maps END,
-        booking = CASE WHEN booking = '' AND ? != '' THEN ? ELSE booking END,
+        phone = CASE WHEN ? != '' THEN ? ELSE phone END,
+        website = CASE WHEN ? != '' THEN ? ELSE website END,
+        google_maps = CASE WHEN ? != '' THEN ? ELSE google_maps END,
+        booking = CASE WHEN ? = 1 THEN ? ELSE booking END,
         rating = CASE WHEN ? > 0 THEN ? ELSE rating END,
         reviews = CASE WHEN ? > 0 THEN ? ELSE reviews END,
-        price = CASE WHEN price = '' AND ? != '' THEN ? ELSE price END,
-        address = CASE WHEN address = '' AND ? != '' THEN ? ELSE address END,
+        price = CASE WHEN ? != '' THEN ? ELSE price END,
+        address = CASE WHEN ? != '' THEN ? ELSE address END,
         description = CASE WHEN ? != '' THEN ? ELSE description END,
-        confidence = CASE WHEN ? > confidence THEN ? ELSE confidence END,
+        lat = CASE WHEN lat IS NULL AND ? IS NOT NULL THEN ? ELSE lat END,
+        lng = CASE WHEN lng IS NULL AND ? IS NOT NULL THEN ? ELSE lng END,
+        vibe = CASE WHEN ? > 0 THEN ? ELSE vibe END,
+        confidence = CASE WHEN ? > 0 THEN ? ELSE confidence END,
+        data_quality = ?,
         last_enriched_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -179,8 +393,8 @@ function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: s
       website,
       googleMaps,
       googleMaps,
-      booking,
-      booking,
+      bookingUpdate.shouldUpdate ? 1 : 0,
+      bookingUpdate.url,
       rating,
       rating,
       reviewCount,
@@ -191,11 +405,22 @@ function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: s
       address,
       description,
       description,
-      confidence,
-      confidence,
+      lat,
+      lat,
+      lng,
+      lng,
+      score.vibe,
+      score.vibe,
+      score.confidence,
+      score.confidence,
+      JSON.stringify(dataQuality),
       placeId,
     ],
   });
+}
+
+function addDetailStatements(statements: InStatement[], row: CsvRow, bookingNotes: string): void {
+  const placeId = get(row, ["id", "place_id"]);
 
   statements.push({
     sql: `
@@ -230,21 +455,48 @@ function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: s
       JSON.stringify(stringArray(get(row, ["photo_urls"]))),
       get(row, ["menu_highlights"]),
       get(row, ["visit_tips"]),
-      get(row, ["booking_notes"]),
+      bookingNotes,
       JSON.stringify(socialLinks(row)),
     ],
   });
+}
 
-  addLinkStatement(statements, placeId, "website", "Website", website);
-  addLinkStatement(statements, placeId, "google_maps", "Google Maps", googleMaps);
-  addLinkStatement(statements, placeId, "booking", "Book", booking);
-  addLinkStatement(statements, placeId, "menu", "Menu", menuUrl);
+function addImportRowStatements(
+  statements: InStatement[],
+  row: CsvRow,
+  runId: string,
+  existing: ExistingPlace | undefined,
+): ImportReportRow {
+  const placeId = get(row, ["id", "place_id"]);
+  const bookingUpdate = resolveBookingUpdate(
+    get(row, ["booking_url", "booking"]),
+    existing?.booking ?? "",
+    get(row, ["booking_notes"]),
+  );
+  const dataQuality = importDataQuality(row, existing, bookingUpdate.reason);
+  const score = rowConfidence(row);
+  const website = get(row, ["website", "official_website"]);
+  const googleMaps = get(row, ["google_maps_url", "google_maps", "maps_url"]);
+  const menuUrl = get(row, ["menu_url", "menu"]);
 
-  for (const [network, url] of Object.entries(socialLinks(row))) {
-    addLinkStatement(statements, placeId, `social_${network}`, network[0].toUpperCase() + network.slice(1), url);
+  if (existing) {
+    addRefreshPlaceStatement(statements, row, bookingUpdate, dataQuality);
+  } else {
+    addNewPlaceStatement(statements, row, bookingUpdate.url, dataQuality);
   }
 
-  for (const citation of citations(get(row, ["citations", "sources"]))) {
+  addDetailStatements(statements, row, bookingUpdate.note);
+  addLinkStatement(statements, placeId, "website", "Website", website, Boolean(website));
+  addLinkStatement(statements, placeId, "google_maps", "Google Maps", googleMaps, Boolean(googleMaps));
+  addLinkStatement(statements, placeId, "booking", "Book", bookingUpdate.url, bookingUpdate.shouldUpdate);
+  addLinkStatement(statements, placeId, "menu", "Menu", menuUrl, Boolean(menuUrl));
+
+  for (const [network, url] of Object.entries(socialLinks(row))) {
+    addLinkStatement(statements, placeId, `social_${network}`, network[0].toUpperCase() + network.slice(1), url, true);
+  }
+
+  const parsedCitations = citations(get(row, ["citations", "sources"]));
+  for (const citation of parsedCitations) {
     statements.push({
       sql: "DELETE FROM place_sources WHERE place_id = ? AND field_name = ? AND source_url = ?",
       args: [placeId, citation.fieldName, citation.sourceUrl],
@@ -272,22 +524,68 @@ function addImportRowStatements(statements: InStatement[], row: CsvRow, runId: s
     `,
     args: [runId, placeId, JSON.stringify(row)],
   });
+
+  const missing: string[] = [];
+  if (!get(row, ["lat", "latitude"]) && !existing) missing.push("coordinates");
+  if (parsedCitations.length === 0) missing.push("citations");
+
+  return {
+    id: placeId,
+    name: get(row, ["official_name", "name"]),
+    action: existing ? "updated" : "inserted",
+    bookingAction: bookingUpdate.shouldUpdate ? (bookingUpdate.url ? "set" : "cleared") : "kept",
+    bookingReason: bookingUpdate.reason,
+    confidence: score.confidence,
+    missing,
+  };
+}
+
+function parseArgs(argv: string[]): ImportOptions {
+  const positional: string[] = [];
+  let allowNew = false;
+  let reportPath = "";
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--allow-new") {
+      allowNew = true;
+    } else if (arg === "--qa-report") {
+      reportPath = argv[index + 1] ?? "";
+      index += 1;
+    } else if (arg.startsWith("--qa-report=")) {
+      reportPath = arg.slice("--qa-report=".length);
+    } else {
+      positional.push(arg);
+    }
+  }
+
+  const source = positional[0];
+  if (!source) {
+    throw new Error(
+      "Usage: npm run enrich:import -- data/enrichment/parallel-input-....output.csv [run-id] [--allow-new] [--qa-report path]",
+    );
+  }
+
+  const runId = positional[1] || basename(source).replace(/\.csv$/i, "");
+  return {
+    source,
+    runId,
+    allowNew,
+    reportPath: reportPath || join(process.cwd(), "data", "enrichment", `import-report-${runId}.json`),
+  };
+}
+
+async function writeReport(path: string, report: ImportReport): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, `${JSON.stringify(report, null, 2)}\n`);
 }
 
 async function importEnrichment(): Promise<void> {
-  const source = process.argv[2];
-  if (!source) {
-    throw new Error("Usage: npm run enrich:import -- data/enrichment/parallel-input-....output.csv [run-id]");
-  }
-
-  const runId = process.argv[3] || basename(source).replace(/\.csv$/i, "");
-  const rows = parseCsv(await readFile(source, "utf8"));
+  const options = parseArgs(process.argv.slice(2));
+  const rows = parseCsv(await readFile(options.source, "utf8"));
   const ids = validateEnrichmentRows(rows);
-  const existingIds = await existingPlaceIds(ids);
-  const missingIds = ids.filter((id) => !existingIds.has(id));
-  if (missingIds.length > 0) {
-    throw new Error(`Invalid enrichment CSV: unknown place ids ${missingIds.join(", ")}`);
-  }
+  const existing = await existingPlaces(ids);
+  validateImportTargets(rows, new Set(existing.keys()), options.allowNew);
 
   const statements: InStatement[] = [
     {
@@ -297,22 +595,39 @@ async function importEnrichment(): Promise<void> {
         )
         VALUES (?, 'parallel', 'importing', '', ?, '[]', CURRENT_TIMESTAMP, NULL, '')
       `,
-      args: [runId, source],
+      args: [options.runId, options.source],
     },
   ];
 
+  const reportRows: ImportReportRow[] = [];
   for (const row of rows) {
-    addImportRowStatements(statements, row, runId);
+    const placeId = get(row, ["id", "place_id"]);
+    reportRows.push(addImportRowStatements(statements, row, options.runId, existing.get(placeId)));
   }
 
   statements.push({
     sql: "UPDATE enrichment_runs SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
-    args: [runId],
+    args: [options.runId],
   });
 
   await libsql.batch(statements, "write");
 
-  console.log(`Imported ${rows.length} enriched rows from ${source}`);
+  const report: ImportReport = {
+    source: options.source,
+    runId: options.runId,
+    importedRows: reportRows.length,
+    insertedRows: reportRows.filter((row) => row.action === "inserted").length,
+    updatedRows: reportRows.filter((row) => row.action === "updated").length,
+    bookingCleared: reportRows.filter((row) => row.bookingAction === "cleared").length,
+    bookingReplaced: reportRows.filter((row) => row.bookingAction === "set").length,
+    lowConfidenceRows: reportRows.filter((row) => row.confidence > 0 && row.confidence < 0.6),
+    rowsMissingRequiredQa: reportRows.filter((row) => row.missing.length > 0),
+    rows: reportRows,
+  };
+  await writeReport(options.reportPath, report);
+
+  console.log(`Imported ${rows.length} enriched rows from ${options.source}`);
+  console.log(`QA report: ${options.reportPath}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

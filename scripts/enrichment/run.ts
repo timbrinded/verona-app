@@ -4,8 +4,12 @@ import { mkdir } from "node:fs/promises";
 import { libsql } from "../../src/db/client";
 
 const requestedFields = [
+  "id",
   "official_name",
+  "category",
   "formatted_address",
+  "lat",
+  "lng",
   "phone",
   "website",
   "google_maps_url",
@@ -28,6 +32,8 @@ const requestedFields = [
   "booking_notes",
   "description",
   "confidence",
+  "vibe_score",
+  "score_components",
   "citations",
 ];
 
@@ -47,12 +53,15 @@ const sourceColumns = [
   { name: "price", description: "Known price tier" },
   { name: "notes", description: "Manual travel notes" },
   { name: "missing_fields", description: "Fields missing from the current database row" },
+  { name: "candidate_source", description: "Discovery source URL or batch name for new candidate rows" },
 ];
 
 const intent = `
 Enrich each Verona travel guide place. Return the original id column plus these exact output columns:
 ${requestedFields.join(", ")}.
-Prefer official websites, booking/menu pages, Google Maps profiles, and trustworthy local listings.
+Prefer official websites, direct booking/menu pages, Google Maps profiles, Michelin, TheFork restaurant pages, and trustworthy local listings.
+Booking_url must be a direct official reservation page, a restaurant-specific TheFork/AutoReserve page, a ticket page, or empty. Never return generic TheFork search URLs.
+Use the Verona methodology for score_components: operating_status, recent_reviews, website_responds, multi_source, phone_listed, hours_listed, michelin_listed, authentic_sentiment, rating_consistency, price_quality, undiscovered_gem, local_crowd, tourist_trap_language, menu_photos_outside, declining_ratings.
 Keep answers concise and travel-useful. Include source URLs and short citation notes in the citations column as JSON.
 Do not invent unavailable data; leave unknown cells empty and lower confidence when sources disagree.
 `;

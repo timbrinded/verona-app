@@ -63,10 +63,16 @@ npm run db:export
 
 ## Enrichment
 
+Preflight Doppler/Parallel/Turso secrets before any remote-backed run:
+
+```bash
+doppler run -- npm run enrich:preflight
+```
+
 Prepare rows with missing or stale enriched data:
 
 ```bash
-npm run enrich:prepare
+npm run enrich:prepare -- --all
 ```
 
 Start a Parallel enrichment job:
@@ -82,7 +88,20 @@ npm run enrich:import -- data/enrichment/parallel-input-YYYY-MM-DD.output.csv
 npm run db:export
 ```
 
-The importer fills missing core fields, adds rich travel details, stores citations, and preserves protected seed/manual fields such as the home-base flag, notes, and pinned coordinates.
+The importer refreshes core fields, adds rich travel details, stores citations, fixes direct-action links, and preserves protected seed/manual fields such as the home-base flag, notes, and pinned coordinates.
+
+For new discoveries, run the Parallel discovery batches, enrich the candidate CSV, merge/dedupe accepted rows to the target map size, import locally with `--allow-new`, then promote accepted rows back into the seed:
+
+```bash
+doppler run -- npm run enrich:discover
+npm run enrich:merge-candidates -- data/enrichment/candidates.output.csv --target-count 120
+npm run enrich:import -- data/enrichment/candidates.output.accepted.csv --allow-new
+npm run enrich:promote-seed
+npm run db:export
+npm run enrich:qa
+```
+
+Booking URLs are treated as direct-action links only. Generic TheFork search URLs and other non-direct booking links are cleared during import and converted into booking notes when no verified replacement exists.
 
 ## Checks
 

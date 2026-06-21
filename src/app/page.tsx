@@ -80,6 +80,66 @@ function linkClass(type: string): string {
   return "bg-gray-700";
 }
 
+function vibeScore(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  return `${Math.min(20, Math.max(0, Math.round(value)))}/20`;
+}
+
+function textList(value: string): string[] {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+  } catch {
+    // Fall through to delimiter parsing.
+  }
+
+  return value
+    .split(/[;\n|]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function sourceLabel(source: Place["sources"][number]): string {
+  const candidates = [source.sourceTitle, source.excerpt, source.fieldName];
+  const noisy = /[{"]?url["]?\s*:|[{"]?note["]?\s*:/i;
+  const label = candidates.find((candidate) => candidate && !noisy.test(candidate));
+  if (label) return label.slice(0, 56);
+
+  try {
+    return new URL(source.sourceUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return source.fieldName;
+  }
+}
+
+function DetailList({ items }: { items: string[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <ul className="mt-1 space-y-1 pl-4 list-disc marker:text-gray-300">
+      {items.slice(0, 4).map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+function DetailLine({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="border-l-2 border-gray-200 pl-3">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</div>
+      <div className="mt-1 text-sm leading-6 text-gray-700">{children}</div>
+    </div>
+  );
+}
+
 export default function Home() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -275,6 +335,9 @@ export default function Home() {
   }, [places]);
 
   const selectedLinks = selectedPlace ? primaryLinks(selectedPlace) : [];
+  const selectedVibeScore = selectedPlace ? vibeScore(selectedPlace.vibe) : "";
+  const selectedMenuHighlights = selectedPlace ? textList(selectedPlace.details.menuHighlights) : [];
+  const selectedVisitTips = selectedPlace ? textList(selectedPlace.details.visitTips) : [];
 
   return (
     <main className="h-screen w-screen relative overflow-hidden isolate">
@@ -338,7 +401,7 @@ export default function Home() {
             ✕
           </button>
 
-          <div className="flex items-start gap-3 pr-8">
+          <div className="flex items-start gap-3 pr-8 border-b border-gray-100 pb-3">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
               style={{ background: CATEGORY_COLORS[selectedPlace.category] || "#6B7280" }}
@@ -346,23 +409,32 @@ export default function Home() {
               {CATEGORY_ICONS[selectedPlace.category] || "📍"}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-gray-900 break-words">{selectedPlace.name}</h2>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
-                <span>{selectedPlace.category}</span>
-                {selectedPlace.price && <span>• {selectedPlace.price}</span>}
-                {selectedPlace.rating > 0 && <span>• {selectedPlace.rating}⭐</span>}
-                {selectedPlace.reviews > 0 && <span>• {selectedPlace.reviews} reviews</span>}
+              <h2 className="text-xl font-bold leading-tight text-gray-950 break-words">{selectedPlace.name}</h2>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-gray-700">
+                <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.category}</span>
+                {selectedPlace.price && <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.price}</span>}
+                {selectedPlace.rating > 0 && (
+                  <span className="rounded-md bg-amber-50 px-2 py-1 text-amber-800">{selectedPlace.rating} rating</span>
+                )}
+                {selectedPlace.reviews > 0 && (
+                  <span className="rounded-md bg-gray-100 px-2 py-1">{selectedPlace.reviews} reviews</span>
+                )}
+                {selectedVibeScore && (
+                  <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">Vibe {selectedVibeScore}</span>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 space-y-2 text-sm text-gray-600">
-            {selectedPlace.address && <p>📍 {selectedPlace.address}</p>}
+          <div className="mt-3 space-y-3 text-sm text-gray-600">
+            {selectedPlace.address && <p className="leading-6">📍 {selectedPlace.address}</p>}
             {userLocation && selectedPlace.lat && (
               <p>🚶 {(getDistanceFromUser(selectedPlace)! * 1000).toFixed(0)}m away</p>
             )}
             {(selectedPlace.description || selectedPlace.notes) && (
-              <p className="text-gray-700">{selectedPlace.description || selectedPlace.notes}</p>
+              <p className="border-l-2 border-gray-200 pl-3 text-[15px] leading-7 text-gray-800">
+                {selectedPlace.description || selectedPlace.notes}
+              </p>
             )}
             {selectedPlace.description && selectedPlace.notes && <p className="text-gray-500">{selectedPlace.notes}</p>}
           </div>
@@ -372,31 +444,25 @@ export default function Home() {
             selectedPlace.details.visitTips ||
             selectedPlace.details.menuHighlights ||
             selectedPlace.details.openingHours.length > 0) && (
-            <div className="mt-4 grid gap-2 text-sm text-gray-700">
+            <div className="mt-4 grid gap-4">
               {selectedPlace.details.bestTimeToVisit && (
-                <p>
-                  <span className="font-semibold">Best time:</span> {selectedPlace.details.bestTimeToVisit}
-                </p>
+                <DetailLine label="Best time">{selectedPlace.details.bestTimeToVisit}</DetailLine>
               )}
               {selectedPlace.details.reservationGuidance && (
-                <p>
-                  <span className="font-semibold">Booking:</span> {selectedPlace.details.reservationGuidance}
-                </p>
+                <DetailLine label="Booking">{selectedPlace.details.reservationGuidance}</DetailLine>
               )}
-              {selectedPlace.details.visitTips && (
-                <p>
-                  <span className="font-semibold">Tip:</span> {selectedPlace.details.visitTips}
-                </p>
+              {selectedVisitTips.length > 0 && (
+                <DetailLine label="Tips">
+                  <DetailList items={selectedVisitTips} />
+                </DetailLine>
               )}
-              {selectedPlace.details.menuHighlights && (
-                <p>
-                  <span className="font-semibold">Menu:</span> {selectedPlace.details.menuHighlights}
-                </p>
+              {selectedMenuHighlights.length > 0 && (
+                <DetailLine label="Menu">
+                  <DetailList items={selectedMenuHighlights} />
+                </DetailLine>
               )}
               {selectedPlace.details.openingHours.length > 0 && (
-                <p>
-                  <span className="font-semibold">Hours:</span> {selectedPlace.details.openingHours.slice(0, 2).join(" · ")}
-                </p>
+                <DetailLine label="Hours">{selectedPlace.details.openingHours.slice(0, 3).join(" · ")}</DetailLine>
               )}
             </div>
           )}
@@ -436,18 +502,21 @@ export default function Home() {
           )}
 
           {selectedPlace.sources.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <div className="mt-4 border-t border-gray-100 pt-3">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Sources</div>
+              <div className="flex flex-wrap gap-2 text-xs">
               {selectedPlace.sources.slice(0, 3).map((source) => (
                 <a
                   key={`${source.fieldName}:${source.sourceUrl}`}
                   href={source.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-500 underline underline-offset-2"
+                  className="rounded-md bg-gray-100 px-2 py-1 text-gray-600"
                 >
-                  {source.sourceTitle || source.fieldName}
+                  {sourceLabel(source)}
                 </a>
               ))}
+              </div>
             </div>
           )}
         </div>

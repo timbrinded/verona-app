@@ -1,5 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
+import { readFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -62,6 +63,13 @@ async function stopServer(server: ChildProcessWithoutNullStreams): Promise<void>
 }
 
 async function main(): Promise<void> {
+  const expectedPlaces = JSON.parse(readFileSync(join(process.cwd(), "public", "data", "places.json"), "utf8")) as {
+    category: string;
+  }[];
+  const expectedCount = expectedPlaces.length;
+  const expectedPubCount = expectedPlaces.filter((place) =>
+    ["Pub", "Craft Beer"].includes(place.category),
+  ).length;
   const port = Number(process.env.PLAYWRIGHT_PORT) || (await freePort());
   const baseUrl = `http://127.0.0.1:${port}`;
   const nextBin = join(process.cwd(), "node_modules", ".bin", process.platform === "win32" ? "next.cmd" : "next");
@@ -99,7 +107,7 @@ async function main(): Promise<void> {
           count: ((await response.json()) as unknown[]).length,
         };
       });
-      if (api.status !== 200 || api.source !== "sqlite" || api.count !== 54) {
+      if (api.status !== 200 || api.source !== "sqlite" || api.count !== expectedCount) {
         throw new Error(`Unexpected API result ${JSON.stringify(api)}`);
       }
 
@@ -109,7 +117,7 @@ async function main(): Promise<void> {
       });
       await page.getByLabel("Toggle filters").click();
       await page.getByRole("button", { name: /Pub/ }).click();
-      await page.getByText("14 places").waitFor({ timeout: 10_000 });
+      await page.getByText(`${expectedPubCount} places`).waitFor({ timeout: 10_000 });
 
       console.log("[smoke] Checking visible API failure path");
       const errorPage = await context.newPage();

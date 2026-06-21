@@ -6,7 +6,7 @@ describe("place payload validation", () => {
   it("accepts the generated data snapshot", async () => {
     const payload = JSON.parse(await readFile("public/data/places.json", "utf8"));
 
-    expect(parsePlacesPayload(payload)).toHaveLength(54);
+    expect(parsePlacesPayload(payload)).toHaveLength(payload.length);
   });
 
   it("rejects non-place responses", () => {

@@ -15,9 +15,16 @@
     "db:seed": "tsx scripts/db/seed.ts",
     "db:export": "tsx scripts/db/export.ts",
     "db:setup": "npm run db:migrate && npm run db:seed && npm run db:export",
+    "enrich:preflight": "tsx scripts/enrichment/preflight.ts",
+    "enrich:audit": "tsx scripts/enrichment/qa.ts --soft",
+    "enrich:qa": "tsx scripts/enrichment/qa.ts",
+    "enrich:discover": "tsx scripts/enrichment/discover.ts",
+    "enrich:google-candidates": "tsx scripts/enrichment/google-candidates.ts",
     "enrich:prepare": "tsx scripts/enrichment/prepare.ts",
     "enrich:run": "tsx scripts/enrichment/run.ts",
-    "enrich:import": "tsx scripts/enrichment/import.ts"
+    "enrich:merge-candidates": "tsx scripts/enrichment/merge-candidates.ts",
+    "enrich:import": "tsx scripts/enrichment/import.ts",
+    "enrich:promote-seed": "tsx scripts/enrichment/promote-seed.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

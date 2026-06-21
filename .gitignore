@@ -18,6 +18,9 @@ data/*.sqlite
 data/*.db-*
 data/*.sqlite-*
 data/enrichment/*.csv
+data/enrichment/*.output.json
+data/enrichment/*report*.json
+data/enrichment/discovery/
 
 # env files
 .env*.local
