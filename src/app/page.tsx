@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ExternalLink, X } from "lucide-react";
+import { X } from "lucide-react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Place, PlaceLink } from "@/lib/place-types";
@@ -52,7 +52,7 @@ interface GeolocateEvent {
 interface PhotoRef {
   url: string;
   host: string;
-  isImage: boolean;
+  sourceUrl: string;
 }
 
 function normalizeCategory(category: string): string {
@@ -127,18 +127,31 @@ function photoHost(url: string): string {
   }
 }
 
-function isDirectImageUrl(url: string): boolean {
+function isLikelyMediaPage(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return /\.(?:avif|gif|jpe?g|png|webp)$/i.test(parsed.pathname);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    if (host.includes("instagram.")) return /\/(p|reel|tv)\//.test(path);
+    if (host.includes("facebook.")) return /\/(photo|photos|posts|permalink)\b/.test(path);
+    return true;
   } catch {
     return false;
   }
 }
 
-function photoRefs(place: Place): PhotoRef[] {
+function mediaSourceUrls(place: Place): string[] {
   const seen = new Set<string>();
-  return place.details.photoUrls
+  const urls = [
+    ...place.details.photoUrls,
+    ...place.links
+      .filter((link) => link.type === "website" || (link.type.startsWith("social_") && isLikelyMediaPage(link.url)))
+      .map((link) => link.url),
+    ...place.sources.map((source) => source.sourceUrl),
+    place.website,
+  ];
+
+  return urls
     .map(urlFromPhotoRef)
     .filter(Boolean)
     .filter((url) => {
@@ -146,12 +159,7 @@ function photoRefs(place: Place): PhotoRef[] {
       seen.add(url);
       return true;
     })
-    .slice(0, 8)
-    .map((url) => ({
-      url,
-      host: photoHost(url),
-      isImage: isDirectImageUrl(url),
-    }));
+    .slice(0, 8);
 }
 
 function sourceLabel(source: Place["sources"][number]): string {
@@ -388,14 +396,62 @@ function DetailLine({ label, children }: { label: string; children: ReactNode })
 }
 
 function PhotoCarousel({ place, isOnline }: { place: Place; isOnline: boolean }) {
-  const refs = useMemo(() => photoRefs(place), [place]);
+  const sourceUrls = useMemo(() => mediaSourceUrls(place), [place]);
+  const [resolvedRefs, setResolvedRefs] = useState<PhotoRef[]>([]);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(() => new Set());
   const [loadedUrls, setLoadedUrls] = useState<Set<string>>(() => new Set());
+  const [isResolving, setIsResolving] = useState(false);
 
-  if (!isOnline || refs.length === 0) return null;
+  useEffect(() => {
+    if (!isOnline || sourceUrls.length === 0) {
+      return;
+    }
 
-  const visibleRefs = refs.filter((ref) => !ref.isImage || !failedUrls.has(ref.url));
-  if (visibleRefs.length === 0) return null;
+    const controller = new AbortController();
+    const resolveImages = async () => {
+      setIsResolving(true);
+      try {
+        const response = await fetch("/api/media/resolve", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ urls: sourceUrls }),
+          signal: controller.signal,
+        });
+        const payload = response.ok ? ((await response.json()) as unknown) : { images: [] };
+        const images = typeof payload === "object" && payload && "images" in payload ? (payload as { images?: unknown }).images : [];
+        const refs = Array.isArray(images)
+          ? images
+              .map((image) => {
+                if (!image || typeof image !== "object") return null;
+                const record = image as Record<string, unknown>;
+                const url = typeof record.url === "string" ? record.url : "";
+                const sourceUrl = typeof record.sourceUrl === "string" ? record.sourceUrl : url;
+                if (!url) return null;
+                return {
+                  url,
+                  sourceUrl,
+                  host: typeof record.host === "string" && record.host ? record.host : photoHost(sourceUrl),
+                };
+              })
+              .filter((ref): ref is PhotoRef => ref !== null)
+          : [];
+        setResolvedRefs(refs);
+      } catch (error: unknown) {
+        if ((error as { name?: string }).name !== "AbortError") setResolvedRefs([]);
+      } finally {
+        if (!controller.signal.aborted) setIsResolving(false);
+      }
+    };
+
+    void resolveImages();
+
+    return () => controller.abort();
+  }, [isOnline, sourceUrls]);
+
+  if (!isOnline || sourceUrls.length === 0) return null;
+
+  const visibleRefs = resolvedRefs.filter((ref) => !failedUrls.has(ref.url));
+  if (visibleRefs.length === 0 && !isResolving) return null;
 
   return (
     <section className="mt-3" aria-label={`${place.name} photos`}>
@@ -408,6 +464,15 @@ function PhotoCarousel({ place, isOnline }: { place: Place; isOnline: boolean })
         </div>
       </div>
       <div className="flex snap-x gap-2 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch]">
+        {visibleRefs.length === 0 && isResolving && (
+          <div className="relative h-32 min-w-[72%] snap-start overflow-hidden border-[3px] border-black bg-[var(--vb-paper)] p-3 shadow-[4px_4px_0_#08080a] sm:min-w-[16rem]">
+            <div className="absolute inset-x-0 top-0 h-1.5 animate-pulse bg-[var(--vb-cyan)]" />
+            <div className="flex h-full flex-col justify-end text-black">
+              <div className="text-[10px] font-black uppercase">Resolving photos</div>
+              <div className="mt-0.5 text-lg font-black leading-none">Checking trusted sources</div>
+            </div>
+          </div>
+        )}
         {visibleRefs.map((ref, index) => (
           <a
             key={ref.url}
@@ -416,44 +481,32 @@ function PhotoCarousel({ place, isOnline }: { place: Place; isOnline: boolean })
             rel="noopener noreferrer"
             className="group relative block h-32 min-w-[72%] snap-start overflow-hidden border-[3px] border-black bg-white shadow-[4px_4px_0_#08080a] sm:min-w-[16rem]"
           >
-            {ref.isImage ? (
-              <>
-                {!loadedUrls.has(ref.url) && (
-                  <div className="absolute inset-0 flex flex-col justify-end bg-[var(--vb-paper)] p-3 text-black">
-                    <div className="text-[10px] font-black uppercase">Loading photo</div>
-                    <div className="mt-0.5 break-words text-lg font-black leading-none">{ref.host}</div>
-                  </div>
-                )}
-                {/* External URLs are intentionally not optimized or stored by this app. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={ref.url}
-                  alt={`${place.name} photo ${index + 1}`}
-                  className={`h-full w-full object-cover transition duration-200 group-hover:scale-[1.03] ${
-                    loadedUrls.has(ref.url) ? "opacity-100" : "opacity-0"
-                  }`}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  onLoad={() => {
-                    setLoadedUrls((current) => new Set(current).add(ref.url));
-                  }}
-                  onError={() => {
-                    setFailedUrls((current) => new Set(current).add(ref.url));
-                  }}
-                />
-              </>
-            ) : (
-              <div className="flex h-full flex-col justify-between bg-[var(--vb-cyan)] p-3 text-black">
-                <div className="text-3xl leading-none">↗</div>
-                <div>
-                  <div className="text-[10px] font-black uppercase">Photo source</div>
-                  <div className="mt-0.5 break-words text-lg font-black leading-none">{ref.host}</div>
-                </div>
+            {!loadedUrls.has(ref.url) && (
+              <div className="absolute inset-0 flex flex-col justify-end bg-[var(--vb-paper)] p-3 text-black">
+                <div className="text-[10px] font-black uppercase">Loading photo</div>
+                <div className="mt-0.5 break-words text-lg font-black leading-none">{ref.host}</div>
               </div>
             )}
+            {/* External URLs are intentionally not optimized or stored by this app. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ref.url}
+              alt={`${place.name} photo ${index + 1}`}
+              className={`h-full w-full object-cover transition duration-200 group-hover:scale-[1.03] ${
+                loadedUrls.has(ref.url) ? "opacity-100" : "opacity-0"
+              }`}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onLoad={() => {
+                setLoadedUrls((current) => new Set(current).add(ref.url));
+              }}
+              onError={() => {
+                setFailedUrls((current) => new Set(current).add(ref.url));
+              }}
+            />
             <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2 bg-[rgba(255,248,230,0.92)] px-2 py-1 text-[10px] font-black uppercase text-black backdrop-blur-sm">
               <span className="truncate">{ref.host}</span>
-              <ExternalLink className="h-3.5 w-3.5 shrink-0" strokeWidth={3} />
+              <span aria-hidden="true">↗</span>
             </div>
           </a>
         ))}
