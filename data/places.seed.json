@@ -3921,7 +3921,7 @@
   {
     "id": "google-ChIJ316bjWNff0cREGV8AwjytvI",
     "name": "Caffè Ai Lamberti",
-    "category": "Late Night",
+    "category": "Aperitivo",
     "rating": 4.1,
     "reviews": 614,
     "price": "EUR EUR",
@@ -3931,13 +3931,14 @@
     "phone": "+39 334 326 2082",
     "website": "https://restaurantguru.it/Ai-Lamberti-Verona?gclid=CjwKCAjwp9qZBhBkEiwAsYFsbyLRCxm3_phuJlUaNyv3M7XYGJ-fbn8V1j7CUnq9InL_Mryp7OQ-3hoCp3MQAvD_BwE",
     "googleMaps": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "notes": "Piazza delle Erbe spritz and tourist cafe; late-opening, but not a true late-night music venue.",
     "lat": 45.4434865,
     "lng": 10.9971386
   },
   {
     "id": "google-ChIJL2YVD0Vff0cRFDjYPc-shmo",
     "name": "Caffè Al Teatro",
-    "category": "Late Night",
+    "category": "Aperitivo",
     "rating": 4.4,
     "reviews": 2343,
     "price": "€€‑€€€",
@@ -3947,6 +3948,7 @@
     "phone": "+39 045 511 7137",
     "website": "http://www.facebook.com/pages/caffe-al-teatro/255975631111238",
     "googleMaps": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "notes": "Post-opera cafe and aperitivo stop near Teatro Filarmonico; late-opening, but not a dance or club venue.",
     "lat": 45.438770899999994,
     "lng": 10.990449199999999
   },
@@ -4032,7 +4034,7 @@
   {
     "id": "google-ChIJ886QI0xff0cRbWlMMN0S9IA",
     "name": "Osteria A La Carega",
-    "category": "Late Night",
+    "category": "Osteria",
     "rating": 4.4,
     "reviews": 1503,
     "price": "Price level unavailable.",
@@ -4042,6 +4044,7 @@
     "phone": "+39 045 806 9248",
     "website": "http://www.osterialacarega.com/",
     "googleMaps": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "notes": "Historic osteria with occasional acoustic/soul programming; late-opening, but not a true late-night category venue.",
     "lat": 45.4451641,
     "lng": 10.9945627
   },

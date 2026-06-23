@@ -914,6 +914,278 @@
     "updatedAt": "2026-06-21 08:20:25"
   },
   {
+    "id": "google-ChIJ316bjWNff0cREGV8AwjytvI",
+    "slug": "caffe-ai-lamberti",
+    "name": "Caffè Ai Lamberti",
+    "category": "Aperitivo",
+    "rating": 4.1,
+    "reviews": 614,
+    "price": "EUR EUR",
+    "distance": 0,
+    "vibe": 12,
+    "confidence": 0.75,
+    "address": "Piazza delle Erbe 30, 37121 Verona, Italy",
+    "phone": "+39 334 326 2082",
+    "website": "https://restaurantguru.it/Ai-Lamberti-Verona?gclid=CjwKCAjwp9qZBhBkEiwAsYFsbyLRCxm3_phuJlUaNyv3M7XYGJ-fbn8V1j7CUnq9InL_Mryp7OQ-3hoCp3MQAvD_BwE",
+    "googleMaps": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "booking": "",
+    "notes": "Piazza delle Erbe spritz and tourist cafe; late-opening, but not a true late-night music venue.",
+    "description": "Popular café/bar on Piazza delle Erbe serving drinks and late-night service.",
+    "lat": 45.4434865,
+    "lng": 10.9971386,
+    "isHomeBase": false,
+    "status": "active",
+    "links": [
+      {
+        "type": "google_maps",
+        "label": "Google Maps",
+        "url": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_facebook",
+        "label": "Facebook",
+        "url": "Facebook unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_instagram",
+        "label": "Instagram",
+        "url": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_tiktok",
+        "label": "Tiktok",
+        "url": "TikTok unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "website",
+        "label": "Website",
+        "url": "https://restaurantguru.it/Ai-Lamberti-Verona?gclid=CjwKCAjwp9qZBhBkEiwAsYFsbyLRCxm3_phuJlUaNyv3M7XYGJ-fbn8V1j7CUnq9InL_Mryp7OQ-3hoCp3MQAvD_BwE",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      }
+    ],
+    "details": {
+      "openingHours": [
+        "Daily 08:00–02:00 (some sources list 10:00–23:00)"
+      ],
+      "bestTimeToVisit": "20:00–23:00",
+      "reservationGuidance": "Reservation guidance unavailable.",
+      "dietaryTags": [],
+      "accessibilityNotes": "Accessibility notes unavailable.",
+      "paymentNotes": "Payment notes unavailable.",
+      "photoUrls": [],
+      "menuHighlights": "",
+      "visitTips": "Use as a Piazza delle Erbe spritz or late cafe stop, not as a club or music-led late-night venue.",
+      "bookingNotes": "Booking notes unavailable.",
+      "socialLinks": {
+        "instagram": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
+        "facebook": "Facebook unavailable.",
+        "tiktok": "TikTok unavailable."
+      },
+      "updatedAt": "2026-06-23 09:48:28"
+    },
+    "sources": [
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://maps.apple.com/place?place-id=I76AE5CF4B0CF00B2&_provider=9902",
+        "sourceTitle": "maps.apple.com",
+        "excerpt": "– Apple Maps entry with address and hours 10 AM–11 PM.",
+        "confidence": 0.75,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
+        "sourceTitle": "instagram.com",
+        "excerpt": "– Instagram location page for the venue.",
+        "confidence": 0.75,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://mindtrip.ai/restaurant/verona-veneto/caffe-ai-lamberti/re-Ihqw6r3b",
+        "sourceTitle": "mindtrip.ai",
+        "excerpt": "– MindTrip page confirming daily hours 8 AM–2 AM.",
+        "confidence": 0.75,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "sourceTitle": "maps.google.com",
+        "excerpt": "Google Places discovery source.",
+        "confidence": 0.75,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "http://mindtrip.ai/restaurant/verona-veneto/caffe-ai-lamberti/re-Ihqw6r3b",
+        "sourceTitle": "Caffe Ai Lamberti Mindtrip",
+        "excerpt": "Mindtrip supports late cafe hours in Piazza delle Erbe.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      }
+    ],
+    "media": [],
+    "dataQuality": {
+      "source": "manual",
+      "lastImportKind": "refresh",
+      "bookingValidation": "empty",
+      "manualCleanup": "late-night-ultra-research-demotion"
+    },
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
+  },
+  {
+    "id": "google-ChIJL2YVD0Vff0cRFDjYPc-shmo",
+    "slug": "caffe-al-teatro",
+    "name": "Caffè Al Teatro",
+    "category": "Aperitivo",
+    "rating": 4.4,
+    "reviews": 2343,
+    "price": "€€‑€€€",
+    "distance": 0,
+    "vibe": 16,
+    "confidence": 0.85,
+    "address": "Via Roma 10, 37121 Verona",
+    "phone": "+39 045 511 7137",
+    "website": "http://www.facebook.com/pages/caffe-al-teatro/255975631111238",
+    "googleMaps": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "booking": "",
+    "notes": "Post-opera cafe and aperitivo stop near Teatro Filarmonico; late-opening, but not a dance or club venue.",
+    "description": "Historic central café/bar offering breakfast, aperitivi, dinner, cocktails and late‑night service.",
+    "lat": 45.438770899999994,
+    "lng": 10.990449199999999,
+    "isHomeBase": false,
+    "status": "active",
+    "links": [
+      {
+        "type": "google_maps",
+        "label": "Google Maps",
+        "url": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_facebook",
+        "label": "Facebook",
+        "url": "https://www.facebook.com/caffealteatro/",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_instagram",
+        "label": "Instagram",
+        "url": "Instagram unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_tiktok",
+        "label": "Tiktok",
+        "url": "TikTok unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "website",
+        "label": "Website",
+        "url": "http://www.facebook.com/pages/caffe-al-teatro/255975631111238",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      }
+    ],
+    "details": {
+      "openingHours": [
+        "07:00–02:00 daily"
+      ],
+      "bestTimeToVisit": "Aperitivo/early evening (around 18:00–20:00)",
+      "reservationGuidance": "Reservations are recommended for dinner; you can call +39 045 511 7137 or check the Facebook page for reservation details.",
+      "dietaryTags": [],
+      "accessibilityNotes": "Accessibility notes unavailable.",
+      "paymentNotes": "Payment notes unavailable.",
+      "photoUrls": [],
+      "menuHighlights": "",
+      "visitTips": "Best as a post-opera wind-down near Teatro Filarmonico; not a late-night dance option.",
+      "bookingNotes": "Phone for bookings: +39 045 511 7137.",
+      "socialLinks": {
+        "instagram": "Instagram unavailable.",
+        "facebook": "https://www.facebook.com/caffealteatro/",
+        "tiktok": "TikTok unavailable."
+      },
+      "updatedAt": "2026-06-23 09:48:28"
+    },
+    "sources": [
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://www.facebook.com/caffealteatro/?locale=it_IT",
+        "sourceTitle": "facebook.com",
+        "excerpt": "– Facebook page showing name and opening hours.",
+        "confidence": 0.85,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://www.facebook.com/pages/caffe-al-teatro/255975631111238",
+        "sourceTitle": "facebook.com",
+        "excerpt": "– Legacy Facebook page listing.",
+        "confidence": 0.85,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "sourceTitle": "maps.google.com",
+        "excerpt": "– Google Maps place confirming location.",
+        "confidence": 0.85,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/caffealteatro/videos/caff%C3%A9-al-teatro-verona-aperto-tutti-i-giorni-dalle-0700-alle-0200-open-every-day/131422749925221/",
+        "sourceTitle": "Caffe Al Teatro Facebook hours",
+        "excerpt": "Facebook video supports daily 07:00-02:00 hours and post-opera positioning.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.arredamentiarte.com/project/caffe-al-teatro/",
+        "sourceTitle": "Caffe Al Teatro Artè Arredamenti",
+        "excerpt": "Project page supports the historic cafe format and small refined interior.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      }
+    ],
+    "media": [],
+    "dataQuality": {
+      "source": "manual",
+      "lastImportKind": "refresh",
+      "bookingValidation": "empty",
+      "manualCleanup": "late-night-ultra-research-demotion"
+    },
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
+  },
+  {
     "id": "google-ChIJS90qIIJff0cRxhQ10RbMgLA",
     "slug": "caffe-borsari",
     "name": "Caffè Borsari",
@@ -15160,350 +15432,6 @@
     "updatedAt": "2026-06-21 08:20:25"
   },
   {
-    "id": "google-ChIJ316bjWNff0cREGV8AwjytvI",
-    "slug": "caffe-ai-lamberti",
-    "name": "Caffè Ai Lamberti",
-    "category": "Late Night",
-    "rating": 4.1,
-    "reviews": 614,
-    "price": "EUR EUR",
-    "distance": 0,
-    "vibe": 12,
-    "confidence": 0.75,
-    "address": "Piazza delle Erbe 30, 37121 Verona, Italy",
-    "phone": "+39 334 326 2082",
-    "website": "https://restaurantguru.it/Ai-Lamberti-Verona?gclid=CjwKCAjwp9qZBhBkEiwAsYFsbyLRCxm3_phuJlUaNyv3M7XYGJ-fbn8V1j7CUnq9InL_Mryp7OQ-3hoCp3MQAvD_BwE",
-    "googleMaps": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-    "booking": "",
-    "notes": "",
-    "description": "Popular café/bar on Piazza delle Erbe serving drinks and late-night service.",
-    "lat": 45.4434865,
-    "lng": 10.9971386,
-    "isHomeBase": false,
-    "status": "active",
-    "links": [
-      {
-        "type": "google_maps",
-        "label": "Google Maps",
-        "url": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_facebook",
-        "label": "Facebook",
-        "url": "Facebook unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_instagram",
-        "label": "Instagram",
-        "url": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_tiktok",
-        "label": "Tiktok",
-        "url": "TikTok unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "website",
-        "label": "Website",
-        "url": "https://restaurantguru.it/Ai-Lamberti-Verona?gclid=CjwKCAjwp9qZBhBkEiwAsYFsbyLRCxm3_phuJlUaNyv3M7XYGJ-fbn8V1j7CUnq9InL_Mryp7OQ-3hoCp3MQAvD_BwE",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "details": {
-      "openingHours": [
-        "Daily 08:00–02:00 (some sources list 10:00–23:00)"
-      ],
-      "bestTimeToVisit": "20:00–23:00",
-      "reservationGuidance": "Reservation guidance unavailable.",
-      "dietaryTags": [],
-      "accessibilityNotes": "Accessibility notes unavailable.",
-      "paymentNotes": "Payment notes unavailable.",
-      "photoUrls": [],
-      "menuHighlights": "",
-      "visitTips": "Visit tips unavailable.",
-      "bookingNotes": "Booking notes unavailable.",
-      "socialLinks": {
-        "instagram": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
-        "facebook": "Facebook unavailable.",
-        "tiktok": "TikTok unavailable."
-      },
-      "updatedAt": "2026-06-23 08:37:11"
-    },
-    "sources": [
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://maps.apple.com/place?place-id=I76AE5CF4B0CF00B2&_provider=9902",
-        "sourceTitle": "maps.apple.com",
-        "excerpt": "– Apple Maps entry with address and hours 10 AM–11 PM.",
-        "confidence": 0.75,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://www.instagram.com/explore/locations/212973005398999/caffe-lamberti-piazza-erbe/",
-        "sourceTitle": "instagram.com",
-        "excerpt": "– Instagram location page for the venue.",
-        "confidence": 0.75,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://mindtrip.ai/restaurant/verona-veneto/caffe-ai-lamberti/re-Ihqw6r3b",
-        "sourceTitle": "mindtrip.ai",
-        "excerpt": "– MindTrip page confirming daily hours 8 AM–2 AM.",
-        "confidence": 0.75,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://maps.google.com/?cid=17489432319172044048&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "sourceTitle": "maps.google.com",
-        "excerpt": "Google Places discovery source.",
-        "confidence": 0.75,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "media": [],
-    "dataQuality": {
-      "source": "parallel",
-      "lastImportKind": "refresh",
-      "bookingValidation": "empty",
-      "scoreComponents": {
-        "openPastMidnight": true,
-        "recentLateEvidence": true,
-        "hoursListed": true,
-        "multiSource": true,
-        "officialSource": true,
-        "eventSocialProof": true,
-        "musicDefined": false,
-        "crowdFit": true,
-        "queueManageable": false,
-        "transportAccess": false,
-        "comfortWarning": false,
-        "strictDoorWarning": false,
-        "deadNightRisk": false
-      },
-      "lateNight": {
-        "lateOpenConfidence": 0.8,
-        "lateDays": [
-          "nightly"
-        ],
-        "lateHoursEvidence": "TripAdvisor listing shows \"Open until 2:00 AM\"; mindtrip.ai page lists hours \"Daily 8 – 2 AM\".",
-        "latestConfirmedClose": "02:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "20–40",
-        "crowdType": "Likely tourists and evening/nighttime visitors",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "22:00–01:00",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
-        "scoreComponents": {
-          "openPastMidnight": true,
-          "recentLateEvidence": true,
-          "hoursListed": true,
-          "multiSource": true,
-          "officialSource": true,
-          "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": true,
-          "queueManageable": false,
-          "transportAccess": false,
-          "comfortWarning": false,
-          "strictDoorWarning": false,
-          "deadNightRisk": false
-        }
-      }
-    },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
-  },
-  {
-    "id": "google-ChIJL2YVD0Vff0cRFDjYPc-shmo",
-    "slug": "caffe-al-teatro",
-    "name": "Caffè Al Teatro",
-    "category": "Late Night",
-    "rating": 4.4,
-    "reviews": 2343,
-    "price": "€€‑€€€",
-    "distance": 0,
-    "vibe": 16,
-    "confidence": 0.85,
-    "address": "Via Roma 10, 37121 Verona",
-    "phone": "+39 045 511 7137",
-    "website": "http://www.facebook.com/pages/caffe-al-teatro/255975631111238",
-    "googleMaps": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-    "booking": "",
-    "notes": "",
-    "description": "Historic central café/bar offering breakfast, aperitivi, dinner, cocktails and late‑night service.",
-    "lat": 45.438770899999994,
-    "lng": 10.990449199999999,
-    "isHomeBase": false,
-    "status": "active",
-    "links": [
-      {
-        "type": "google_maps",
-        "label": "Google Maps",
-        "url": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_facebook",
-        "label": "Facebook",
-        "url": "https://www.facebook.com/caffealteatro/",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_instagram",
-        "label": "Instagram",
-        "url": "Instagram unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_tiktok",
-        "label": "Tiktok",
-        "url": "TikTok unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "website",
-        "label": "Website",
-        "url": "http://www.facebook.com/pages/caffe-al-teatro/255975631111238",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "details": {
-      "openingHours": [
-        "07:00–02:00 daily"
-      ],
-      "bestTimeToVisit": "Aperitivo/early evening (around 18:00–20:00)",
-      "reservationGuidance": "Reservations are recommended for dinner; you can call +39 045 511 7137 or check the Facebook page for reservation details.",
-      "dietaryTags": [],
-      "accessibilityNotes": "Accessibility notes unavailable.",
-      "paymentNotes": "Payment notes unavailable.",
-      "photoUrls": [],
-      "menuHighlights": "",
-      "visitTips": "Arrive early to avoid crowds; enjoy the aperitivo menu around 18:00‑20:00; consider calling ahead for dinner reservations, especially on weekends.",
-      "bookingNotes": "Phone for bookings: +39 045 511 7137.",
-      "socialLinks": {
-        "instagram": "Instagram unavailable.",
-        "facebook": "https://www.facebook.com/caffealteatro/",
-        "tiktok": "TikTok unavailable."
-      },
-      "updatedAt": "2026-06-23 08:37:11"
-    },
-    "sources": [
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://www.facebook.com/caffealteatro/?locale=it_IT",
-        "sourceTitle": "facebook.com",
-        "excerpt": "– Facebook page showing name and opening hours.",
-        "confidence": 0.85,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://www.facebook.com/pages/caffe-al-teatro/255975631111238",
-        "sourceTitle": "facebook.com",
-        "excerpt": "– Legacy Facebook page listing.",
-        "confidence": 0.85,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://maps.google.com/?cid=7676012620995377172&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "sourceTitle": "maps.google.com",
-        "excerpt": "– Google Maps place confirming location.",
-        "confidence": 0.85,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "media": [],
-    "dataQuality": {
-      "source": "parallel",
-      "lastImportKind": "refresh",
-      "bookingValidation": "empty",
-      "scoreComponents": {
-        "openPastMidnight": true,
-        "recentLateEvidence": true,
-        "hoursListed": true,
-        "multiSource": true,
-        "officialSource": true,
-        "eventSocialProof": true,
-        "musicDefined": false,
-        "crowdFit": false,
-        "queueManageable": false,
-        "transportAccess": false,
-        "comfortWarning": false,
-        "strictDoorWarning": false,
-        "deadNightRisk": false
-      },
-      "lateNight": {
-        "lateOpenConfidence": 0.9,
-        "lateDays": [
-          "Every day"
-        ],
-        "lateHoursEvidence": "Both Facebook and TripAdvisor list opening hours 07:00–02:00 daily, confirming late‑night operation.",
-        "latestConfirmedClose": "02:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Evening to late night (approximately 20:00–02:00)",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
-        "scoreComponents": {
-          "openPastMidnight": true,
-          "recentLateEvidence": true,
-          "hoursListed": true,
-          "multiSource": true,
-          "officialSource": true,
-          "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
-          "queueManageable": false,
-          "transportAccess": false,
-          "comfortWarning": false,
-          "strictDoorWarning": false,
-          "deadNightRisk": false
-        }
-      }
-    },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
-  },
-  {
     "id": "google-ChIJ2ZTsnsfjgUcRTvzYTsPHWKE",
     "slug": "etica-club",
     "name": "ETICA CLUB",
@@ -15619,11 +15547,35 @@
         "excerpt": "– Google Maps URL confirming location.",
         "confidence": 0.78,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://ra.co/events/2078420",
+        "sourceTitle": "180BPM @ETICA CLUB",
+        "excerpt": "Resident Advisor lists techno/industrial genres, 23:30 start, tiered entry before/after 00:30.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://ra.co/events/2286522",
+        "sourceTitle": "180BPM 1ST ANNIVERSARY at ETICA CLUB",
+        "excerpt": "Resident Advisor event reconfirms a 23:30-05:00 late-night club window.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://maps.apple.com/place?place-id=IE3AA3DED7203B96C",
+        "sourceTitle": "Etica Club Apple Maps",
+        "excerpt": "Apple Maps listing supports Friday/Saturday late operating hours.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -15648,18 +15600,7 @@
           "Saturday"
         ],
         "lateHoursEvidence": "Apple Maps indicates the venue stays open until 04:00 on Fridays and Saturdays.",
-        "latestConfirmedClose": "04:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
+        "latestConfirmedClose": "05:00",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -15667,18 +15608,30 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
+          "musicDefined": true,
+          "crowdFit": true,
           "queueManageable": false,
           "transportAccess": false,
-          "comfortWarning": false,
-          "strictDoorWarning": false,
+          "comfortWarning": true,
+          "strictDoorWarning": true,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "Techno, industrial",
+        "crowdAgeRange": "20-34",
+        "crowdType": "Techno/hard-dance locals and out-of-town fans",
+        "queueLikelihood": "High on major Saturdays",
+        "queueDuration": "5-20 minutes around the 00:30 price-tier change",
+        "doorPolicy": "18+, tiered entry before/after 00:30",
+        "busyLevel": "High on big event nights",
+        "peakTime": "01:30-04:00",
+        "heatSweatLevel": "Medium-high",
+        "dancefloor": "Dedicated techno club floor",
+        "lastEntryRisk": "Medium-high"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJm0hUIKJff0cRNo-_wrnFShA",
@@ -15788,11 +15741,35 @@
         "excerpt": "– Google Maps listing with address and phone.",
         "confidence": 0.85,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/ginginverona/?locale=it_IT",
+        "sourceTitle": "Gin-Gin Facebook",
+        "excerpt": "Facebook posts cite 23:00-04:00 hours, DJ Darius, address, and event pricing.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/p/DVwf7_aDFgI/",
+        "sourceTitle": "Gin-Gin Afro Funky event",
+        "excerpt": "Instagram event post describes Afro Funky music, DJs, live percussion, and late-night timing.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://m.papido.it/verona/discoteche/gin-gin.htm",
+        "sourceTitle": "Gin-Gin Papido profile",
+        "excerpt": "Papido profile supports Romanian-leaning club positioning.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -15813,21 +15790,10 @@
       "lateNight": {
         "lateOpenConfidence": 0.9,
         "lateDays": [
-          "Every night"
+          "Saturday event nights"
         ],
         "lateHoursEvidence": "Facebook posts state the club operates from 23:00 until 04:00, confirming late‑night service.",
         "latestConfirmedClose": "04:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -15835,18 +15801,30 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
-          "queueManageable": false,
+          "musicDefined": true,
+          "crowdFit": true,
+          "queueManageable": true,
           "transportAccess": false,
-          "comfortWarning": false,
+          "comfortWarning": true,
           "strictDoorWarning": false,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "Afro, funky, 80s-to-today, live percussion",
+        "crowdAgeRange": "20-38",
+        "crowdType": "Romanian-speaking audience and Italian regulars",
+        "queueLikelihood": "Medium on event Saturdays",
+        "queueDuration": "5-20 minutes",
+        "doorPolicy": "Event entry; men 10 EUR, women free on cited nights",
+        "busyLevel": "High on event Saturdays",
+        "peakTime": "23:30-02:30",
+        "heatSweatLevel": "Medium-high",
+        "dancefloor": "Indoor dancefloor with DJ/live percussion setup",
+        "lastEntryRisk": "Medium"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJG42_VThff0cRx7R-4QIv298",
@@ -15956,11 +15934,27 @@
         "excerpt": "– Contact page with phone number and address.",
         "confidence": 0.75,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/laccademia.barrier/",
+        "sourceTitle": "L'Accademia Instagram",
+        "excerpt": "Instagram bio and reels support student nights, UniVR crowd, DJ sets, and funk/dancehall/reggaeton/trap/hip-hop programming.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/p/LAccademia-100083400187703/",
+        "sourceTitle": "L'Accademia Facebook",
+        "excerpt": "Facebook supports Wednesday university-night positioning.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -15991,17 +15985,16 @@
         ],
         "lateHoursEvidence": "Instagram bio and local menu/listing pages show closing time 02:00, plus Google Maps candidate.",
         "latestConfirmedClose": "02:00",
-        "musicStyle": "pop/club/modern hits",
+        "musicStyle": "Funk, dancehall, reggaeton, trap, hip-hop, live DJ sets",
         "crowdAgeRange": "18‑30",
         "crowdType": "students and locals",
         "queueLikelihood": "moderate",
-        "queueDuration": "5‑20 minutes",
+        "queueDuration": "5-15 minutes",
         "doorPolicy": "Casual but may enforce ID/age and capacity limits on busy nights.",
         "busyLevel": "moderate to high on weekend/uni nights",
-        "peakTime": "23:00‑01:30",
+        "peakTime": "22:30-01:30",
         "heatSweatLevel": "medium when busy",
         "dancefloor": "small or ad‑hoc dancing space",
-        "lastEntryRisk": "Last entry risk unknown.",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -16016,11 +16009,13 @@
           "comfortWarning": false,
           "strictDoorWarning": false,
           "deadNightRisk": false
-        }
-      }
+        },
+        "lastEntryRisk": "Low-medium"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJk-SVc0Rff0cRCfGp_aWVo9s",
@@ -16140,11 +16135,35 @@
         "excerpt": "Google Places discovery source.",
         "confidence": 0.7,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/luclacafe/?hl=it",
+        "sourceTitle": "Lucla Cafe Instagram",
+        "excerpt": "Instagram profile supports weekly late opening hours.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/luclacafe/?locale=it_IT",
+        "sourceTitle": "Lucla Cafe Facebook",
+        "excerpt": "Facebook self-describes a gay bar that is hetero-friendly and supports karaoke programming.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "http://nighttours.com/verona/gayguide/lucla-cafe.html",
+        "sourceTitle": "Lucla Cafe Nighttours",
+        "excerpt": "Nighttours frames Lucla as a stylish LGBTQ+ place to start the night, not a dance club.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -16165,25 +16184,12 @@
       "lateNight": {
         "lateOpenConfidence": 0.8,
         "lateDays": [
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday"
+          "Mon-Tue until 01:00",
+          "Wed-Sun until 02:00"
         ],
         "lateHoursEvidence": "Instagram shows the venue is open until 02:00 on Wed‑Fri and weekends, and until 01:00 on Mon‑Tue.",
         "latestConfirmedClose": "02:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "LGBTQ+ locals and tourists",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
+        "crowdType": "LGBTQ+ locals and tourists, hetero-friendly",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -16191,18 +16197,29 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
+          "musicDefined": true,
           "crowdFit": true,
-          "queueManageable": false,
+          "queueManageable": true,
           "transportAccess": false,
           "comfortWarning": false,
           "strictDoorWarning": false,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "Background bar music; recurring karaoke",
+        "crowdAgeRange": "20-40",
+        "queueLikelihood": "Low",
+        "queueDuration": "<10 minutes",
+        "doorPolicy": "Casual cafe/bar entry",
+        "busyLevel": "Moderate",
+        "peakTime": "22:00-01:00",
+        "heatSweatLevel": "Low",
+        "dancefloor": "None",
+        "lastEntryRisk": "Low"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJoy4V_idrf0cRHeC7KIrx878",
@@ -16279,14 +16296,14 @@
       "paymentNotes": "Payment notes unavailable.",
       "photoUrls": [],
       "menuHighlights": "",
-      "visitTips": "Visit tips unavailable.",
+      "visitTips": "Plan transport; Ronco all'Adige is outside Verona centro.",
       "bookingNotes": "Booking notes unavailable.",
       "socialLinks": {
         "instagram": "https://www.instagram.com/maria_loka_cocktail_sound/",
         "facebook": "https://www.facebook.com/MariaLokacocktailbar/",
         "tiktok": "TikTok unavailable."
       },
-      "updatedAt": "2026-06-23 08:37:11"
+      "updatedAt": "2026-06-23 09:48:28"
     },
     "sources": [
       {
@@ -16328,11 +16345,35 @@
         "excerpt": "Google Places discovery source.",
         "confidence": 0.7,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/maria_loka_cocktail_sound/",
+        "sourceTitle": "Maria Loka Instagram",
+        "excerpt": "Instagram posts show Friday/themed party programming, DJ sets, 18+ and free-entry event framing.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/MariaLokacocktailbar/",
+        "sourceTitle": "Maria Loka Facebook",
+        "excerpt": "Facebook event posts support aperitivo into disco timing and 03:00 late-night close.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "http://www.discotecheverona.it/locale/maria-loka-ronco-all-adige-verona",
+        "sourceTitle": "Maria Loka Discoteche Verona profile",
+        "excerpt": "Venue profile supports the cocktail-sound club format outside Verona centro.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -16353,21 +16394,11 @@
       "lateNight": {
         "lateOpenConfidence": 0.8,
         "lateDays": [
-          "Friday"
+          "Friday",
+          "extra promoted event nights"
         ],
         "lateHoursEvidence": "Facebook indicates opening from 20:00 to 03:00 on Fridays, while Instagram mentions 22:00‑03:00 nightly.",
         "latestConfirmedClose": "03:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -16375,200 +16406,30 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
-          "queueManageable": false,
+          "musicDefined": true,
+          "crowdFit": true,
+          "queueManageable": true,
           "transportAccess": false,
           "comfortWarning": false,
-          "strictDoorWarning": false,
+          "strictDoorWarning": true,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "DJ sets, 90s/2000s, Afro Funky, themed parties",
+        "crowdAgeRange": "18-35",
+        "crowdType": "Young local crowd from the bassa veronese",
+        "queueLikelihood": "Low regular Fridays; moderate themed nights",
+        "queueDuration": "5-15 minutes",
+        "doorPolicy": "18+, casual, often free entry",
+        "busyLevel": "Moderate-high on themed Fridays",
+        "peakTime": "23:30-02:00",
+        "heatSweatLevel": "Medium",
+        "dancefloor": "Small dedicated disco/dance area",
+        "lastEntryRisk": "Low"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
-  },
-  {
-    "id": "google-ChIJ886QI0xff0cRbWlMMN0S9IA",
-    "slug": "osteria-a-la-carega",
-    "name": "Osteria A La Carega",
-    "category": "Late Night",
-    "rating": 4.4,
-    "reviews": 1503,
-    "price": "Price level unavailable.",
-    "distance": 0,
-    "vibe": 9,
-    "confidence": 0.7,
-    "address": "Via Cadrega 8, 37121 Verona VR",
-    "phone": "+39 045 806 9248",
-    "website": "http://www.osterialacarega.com/",
-    "googleMaps": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-    "booking": "",
-    "notes": "",
-    "description": "A historic osteria in the heart of Verona offering evenings with good wine and a convivial atmosphere for locals and tourists alike.",
-    "lat": 45.4451641,
-    "lng": 10.9945627,
-    "isHomeBase": false,
-    "status": "active",
-    "links": [
-      {
-        "type": "google_maps",
-        "label": "Google Maps",
-        "url": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_facebook",
-        "label": "Facebook",
-        "url": "Facebook unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_instagram",
-        "label": "Instagram",
-        "url": "Instagram unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "social_tiktok",
-        "label": "Tiktok",
-        "url": "TikTok unavailable.",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "type": "website",
-        "label": "Website",
-        "url": "http://www.osterialacarega.com/",
-        "source": "parallel",
-        "confidence": 0.8,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "details": {
-      "openingHours": [
-        "Open until 2 AM on Monday, Wednesday, Thursday, Friday, Saturday and Sunday",
-        "closed on Tuesday. Opening times range from 10:30 AM to 12 PM depending on the day."
-      ],
-      "bestTimeToVisit": "Best time to visit unknown.",
-      "reservationGuidance": "Reservation guidance unavailable.",
-      "dietaryTags": [],
-      "accessibilityNotes": "Accessibility notes unavailable.",
-      "paymentNotes": "Payment notes unavailable.",
-      "photoUrls": [],
-      "menuHighlights": "",
-      "visitTips": "Arrive early to secure a table, enjoy the historic ambience, try the house wine, and be aware that the venue stays open until 2 AM on most nights.",
-      "bookingNotes": "Booking notes unavailable.",
-      "socialLinks": {
-        "instagram": "Instagram unavailable.",
-        "facebook": "Facebook unavailable.",
-        "tiktok": "TikTok unavailable."
-      },
-      "updatedAt": "2026-06-23 08:37:11"
-    },
-    "sources": [
-      {
-        "fieldName": "general",
-        "sourceUrl": "http://www.osterialacarega.com/",
-        "sourceTitle": "osterialacarega.com",
-        "excerpt": "– Official website providing description and contact.",
-        "confidence": 0.7,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
-        "sourceTitle": "maps.google.com",
-        "excerpt": "– Google Maps location and late‑hour hint.",
-        "confidence": 0.7,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://wanderlog.com/place/details/3639274/osteria-a-la-carega",
-        "sourceTitle": "wanderlog.com",
-        "excerpt": "– Detailed opening hours and venue overview.",
-        "confidence": 0.7,
-        "retrievedAt": "2026-06-23 08:37:11"
-      },
-      {
-        "fieldName": "general",
-        "sourceUrl": "https://www.cittadiverona.it/osterie/osteria-a-la-carega/",
-        "sourceTitle": "cittadiverona.it",
-        "excerpt": "– City guide confirming address and contact.",
-        "confidence": 0.7,
-        "retrievedAt": "2026-06-23 08:37:11"
-      }
-    ],
-    "media": [],
-    "dataQuality": {
-      "source": "parallel",
-      "lastImportKind": "refresh",
-      "bookingValidation": "empty",
-      "scoreComponents": {
-        "openPastMidnight": true,
-        "recentLateEvidence": true,
-        "hoursListed": true,
-        "multiSource": true,
-        "officialSource": true,
-        "eventSocialProof": true,
-        "musicDefined": false,
-        "crowdFit": false,
-        "queueManageable": false,
-        "transportAccess": false,
-        "comfortWarning": false,
-        "strictDoorWarning": false,
-        "deadNightRisk": false
-      },
-      "lateNight": {
-        "lateOpenConfidence": 0.8,
-        "lateDays": [
-          "Monday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday"
-        ],
-        "lateHoursEvidence": "Google Maps listing and Wanderlog schedule show the venue remains open until 2 AM on six days a week.",
-        "latestConfirmedClose": "02:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
-        "scoreComponents": {
-          "openPastMidnight": true,
-          "recentLateEvidence": true,
-          "hoursListed": true,
-          "multiSource": true,
-          "officialSource": true,
-          "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
-          "queueManageable": false,
-          "transportAccess": false,
-          "comfortWarning": false,
-          "strictDoorWarning": false,
-          "deadNightRisk": false
-        }
-      }
-    },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJgag3Jb9Yf0cRU8ty3A5Y5_A",
@@ -16690,11 +16551,27 @@
         "excerpt": "Google Places discovery source.",
         "confidence": 0.8,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.piperverona.it/index-en.html",
+        "sourceTitle": "Piper Verona official site",
+        "excerpt": "Official site supports the refined restaurant/club format, booking route, and event positioning.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.piperverona.it/it/eventi",
+        "sourceTitle": "Piper Verona events",
+        "excerpt": "Piper event page lists Friday/Saturday club hours and named formats including BACK TO 90'S, SABATO NOTTE, and FRIDAY VIBES.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -16715,19 +16592,19 @@
       "lateNight": {
         "lateOpenConfidence": 0.8,
         "lateDays": [
-          "Saturday",
-          "likely also Friday"
+          "Friday",
+          "Saturday event nights"
         ],
         "lateHoursEvidence": "Facebook event shows Saturday, June 20, 2026 from 8:00 PM to 3:00 AM CEST, indicating the venue stays open until 03:00. The official site describes Piper Verona as a restaurant and club, suggesting regular late‑night operation.",
-        "latestConfirmedClose": "03:00",
-        "musicStyle": "Mainstream club music, DJ mixes and occasional live music",
-        "crowdAgeRange": "20–40",
-        "crowdType": "Mixed locals and tourists, primarily adults",
+        "latestConfirmedClose": "02:00",
+        "musicStyle": "BACK TO 90'S, SABATO NOTTE, FRIDAY VIBES, mainstream club programming",
+        "crowdAgeRange": "20-50",
+        "crowdType": "Well-dressed locals, tourists, celebratory groups",
         "queueLikelihood": "Medium",
-        "queueDuration": "10–30 minutes",
+        "queueDuration": "10-25 minutes",
         "doorPolicy": "Typical nightclub entry; may enforce smart‑casual dress code and charge a cover fee on event nights. Specific policy not posted.",
         "busyLevel": "Medium‑high on event nights",
-        "peakTime": "23:30–02:00",
+        "peakTime": "22:30-01:30",
         "heatSweatLevel": "Medium",
         "dancefloor": "Indoor dancefloor with panoramic city views; size medium, suitable for DJ sets.",
         "lastEntryRisk": "Medium",
@@ -16743,13 +16620,14 @@
           "queueManageable": true,
           "transportAccess": false,
           "comfortWarning": false,
-          "strictDoorWarning": true,
+          "strictDoorWarning": false,
           "deadNightRisk": false
         }
-      }
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJ0x7pIetff0cRZ00a3p3WuPo",
@@ -16843,11 +16721,27 @@
         "excerpt": "– Google Maps listing confirming venue name and location.",
         "confidence": 0.7,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/theriverbankpub/",
+        "sourceTitle": "The Riverbank Instagram",
+        "excerpt": "Instagram profile supports weekly opening hours and live acoustic/tribute event programming.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "http://pubverona.com/",
+        "sourceTitle": "The Riverbank official site",
+        "excerpt": "Official site supports English-pub positioning and evening drinks format.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -16868,21 +16762,13 @@
       "lateNight": {
         "lateOpenConfidence": 0.8,
         "lateDays": [
-          "Every night"
+          "Tue-Thu until 01:00",
+          "Fri-Sat until 02:00",
+          "Sunday evening",
+          "Monday closed"
         ],
         "lateHoursEvidence": "Aperto fino alle ore 2.00.",
         "latestConfirmedClose": "02:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Crowd type unknown.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -16890,18 +16776,30 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
-          "crowdFit": false,
-          "queueManageable": false,
+          "musicDefined": true,
+          "crowdFit": true,
+          "queueManageable": true,
           "transportAccess": false,
           "comfortWarning": false,
           "strictDoorWarning": false,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "Live acoustic and tribute acts",
+        "crowdAgeRange": "Mid-20s to 40s",
+        "crowdType": "Tourists, expats, Italian regulars, English-pub crowd",
+        "queueLikelihood": "Low except live-music nights",
+        "queueDuration": "<10 minutes",
+        "doorPolicy": "Casual pub entry",
+        "busyLevel": "Moderate evenings",
+        "peakTime": "20:00-23:00",
+        "heatSweatLevel": "Low",
+        "dancefloor": "None; small standing area for live acts",
+        "lastEntryRisk": "Low"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJ42b63Q5Bf0cRKqnCxhx9ydc",
@@ -17036,11 +16934,27 @@
         "excerpt": "Google Places discovery source.",
         "confidence": 0.7,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "http://www.discotecheverona.it/locale/skylight-tecnocolor-disco-san-bonifacio",
+        "sourceTitle": "Skylight United Colors Disco profile",
+        "excerpt": "Discoteche Verona describes a Saturday 23:00-05:00 two-room club with house plus hip-hop/R&B/revival private room.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/skylightdisco/?hl=en",
+        "sourceTitle": "Skylight Instagram",
+        "excerpt": "Instagram profile lists opening/closing and tiered entry pricing before 00:30, 00:30-01:30, and after 01:30.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -17065,18 +16979,8 @@
           "holidays/special events"
         ],
         "lateHoursEvidence": "Instagram and Facebook list Opening 23:30 – Closing 04:00; Verona directory notes Saturday open 23:00 – 05:00, confirming the venue stays open late.",
-        "latestConfirmedClose": "04:00",
-        "musicStyle": "Music style unknown.",
-        "crowdAgeRange": "Crowd age range unknown.",
-        "crowdType": "Locals and fashion‑forward crowd, gay‑friendly.",
-        "queueLikelihood": "Queue likelihood unknown.",
-        "queueDuration": "Queue duration unknown.",
-        "doorPolicy": "Door policy unknown.",
-        "busyLevel": "Busy level unknown.",
-        "peakTime": "Peak time unknown.",
-        "heatSweatLevel": "Heat/sweat level unknown.",
-        "dancefloor": "Dancefloor unknown.",
-        "lastEntryRisk": "Last entry risk unknown.",
+        "latestConfirmedClose": "05:00",
+        "crowdType": "Gay-friendly, fashion-forward Verona/Vicenza crowd",
         "scoreComponents": {
           "openPastMidnight": true,
           "recentLateEvidence": true,
@@ -17084,18 +16988,29 @@
           "multiSource": true,
           "officialSource": true,
           "eventSocialProof": true,
-          "musicDefined": false,
+          "musicDefined": true,
           "crowdFit": true,
           "queueManageable": false,
           "transportAccess": false,
-          "comfortWarning": false,
-          "strictDoorWarning": false,
+          "comfortWarning": true,
+          "strictDoorWarning": true,
           "deadNightRisk": false
-        }
-      }
+        },
+        "musicStyle": "House main room; hip-hop/R&B/revival private room",
+        "crowdAgeRange": "20-38",
+        "queueLikelihood": "High on Saturdays",
+        "queueDuration": "10-30 minutes before/around pricing tiers",
+        "doorPolicy": "List/PR registration; tiered entry after 00:30 and 01:30",
+        "busyLevel": "High on Saturdays",
+        "peakTime": "00:30-02:30",
+        "heatSweatLevel": "Medium-high",
+        "dancefloor": "Main-room floor plus private-room floor",
+        "lastEntryRisk": "Medium-high"
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJYx5CU75Yf0cR41gHlgcIQGE",
@@ -17173,14 +17088,14 @@
       "paymentNotes": "Payment notes unavailable.",
       "photoUrls": [],
       "menuHighlights": "",
-      "visitTips": "Arrive after 22:00 for DJs, consider booking via WhatsApp +39 320 678 8644 for groups, outdoor venue – dress for weather.",
+      "visitTips": "Seasonal outdoor venue; best on good-weather event nights.",
       "bookingNotes": "Seasonal opening.",
       "socialLinks": {
         "instagram": "Instagram unavailable.",
         "facebook": "https://www.facebook.com/pg/veronabeergarden",
         "tiktok": "TikTok unavailable."
       },
-      "updatedAt": "2026-06-23 08:37:11"
+      "updatedAt": "2026-06-23 09:48:28"
     },
     "sources": [
       {
@@ -17198,11 +17113,27 @@
         "excerpt": "– Google Maps listing with rating, reviews, and late‑night classification",
         "confidence": 0.72,
         "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.veronabeergarden.it/",
+        "sourceTitle": "Verona Beer Garden official site",
+        "excerpt": "Official site supports seasonal good-weather evening operation and live music programming.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.instagram.com/reel/C-FVRhiou9l/",
+        "sourceTitle": "Verona Beer Garden live music reel",
+        "excerpt": "Instagram reel supports weekly live music and DJ/band programming.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
       }
     ],
     "media": [],
     "dataQuality": {
-      "source": "parallel",
+      "source": "manual",
       "lastImportKind": "refresh",
       "bookingValidation": "empty",
       "scoreComponents": {
@@ -17223,21 +17154,21 @@
       "lateNight": {
         "lateOpenConfidence": 0.7,
         "lateDays": [
-          "Friday",
-          "Saturday",
-          "event nights (seasonal)"
+          "Seasonal good-weather evenings",
+          "Wed/Fri live music",
+          "Saturday DJ/band nights"
         ],
         "lateHoursEvidence": "Google Places labels the venue as a late‑night DJ bar; website lists opening from 19:00 on Wednesdays, implying late‑hour operation.",
         "latestConfirmedClose": "01:00",
-        "musicStyle": "DJ / electronic and popular dance music",
+        "musicStyle": "Live bands, DJ sets, pop/dance, tribute acts",
         "crowdAgeRange": "20–40",
         "crowdType": "Mix of locals and tourists",
         "queueLikelihood": "Moderate on event nights",
-        "queueDuration": "10–30 minutes typical on busy nights",
+        "queueDuration": "10-20 minutes",
         "doorPolicy": "Casual, reservation suggested for groups.",
         "busyLevel": "Moderate to high on event nights",
-        "peakTime": "Late evening (around 22:00–01:00)",
-        "heatSweatLevel": "Low to moderate",
+        "peakTime": "21:30-00:30",
+        "heatSweatLevel": "Low",
         "dancefloor": "Outdoor seating with space for standing and informal dancing.",
         "lastEntryRisk": "Low to moderate",
         "scoreComponents": {
@@ -17255,10 +17186,11 @@
           "strictDoorWarning": false,
           "deadNightRisk": false
         }
-      }
+      },
+      "manualCleanup": "late-night-ultra-research"
     },
-    "lastEnrichedAt": "2026-06-23 08:37:11",
-    "updatedAt": "2026-06-23 08:37:11"
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJQ-Z4DzFff0cRW67FwQe5OX8",
@@ -19612,6 +19544,151 @@
     },
     "lastEnrichedAt": "2026-06-21 08:20:25",
     "updatedAt": "2026-06-21 08:20:25"
+  },
+  {
+    "id": "google-ChIJ886QI0xff0cRbWlMMN0S9IA",
+    "slug": "osteria-a-la-carega",
+    "name": "Osteria A La Carega",
+    "category": "Osteria",
+    "rating": 4.4,
+    "reviews": 1503,
+    "price": "Price level unavailable.",
+    "distance": 0,
+    "vibe": 9,
+    "confidence": 0.7,
+    "address": "Via Cadrega 8, 37121 Verona VR",
+    "phone": "+39 045 806 9248",
+    "website": "http://www.osterialacarega.com/",
+    "googleMaps": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "booking": "",
+    "notes": "Historic osteria with occasional acoustic/soul programming; late-opening, but not a true late-night category venue.",
+    "description": "A historic osteria in the heart of Verona offering evenings with good wine and a convivial atmosphere for locals and tourists alike.",
+    "lat": 45.4451641,
+    "lng": 10.9945627,
+    "isHomeBase": false,
+    "status": "active",
+    "links": [
+      {
+        "type": "google_maps",
+        "label": "Google Maps",
+        "url": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_facebook",
+        "label": "Facebook",
+        "url": "Facebook unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_instagram",
+        "label": "Instagram",
+        "url": "Instagram unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "social_tiktok",
+        "label": "Tiktok",
+        "url": "TikTok unavailable.",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "type": "website",
+        "label": "Website",
+        "url": "http://www.osterialacarega.com/",
+        "source": "parallel",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 08:37:11"
+      }
+    ],
+    "details": {
+      "openingHours": [
+        "Open until 2 AM on Monday, Wednesday, Thursday, Friday, Saturday and Sunday",
+        "closed on Tuesday. Opening times range from 10:30 AM to 12 PM depending on the day."
+      ],
+      "bestTimeToVisit": "Best time to visit unknown.",
+      "reservationGuidance": "Reservation guidance unavailable.",
+      "dietaryTags": [],
+      "accessibilityNotes": "Accessibility notes unavailable.",
+      "paymentNotes": "Payment notes unavailable.",
+      "photoUrls": [],
+      "menuHighlights": "",
+      "visitTips": "Go for wine, beer, and occasional Thursday acoustic/soul sets; not a club-style late-night venue.",
+      "bookingNotes": "Booking notes unavailable.",
+      "socialLinks": {
+        "instagram": "Instagram unavailable.",
+        "facebook": "Facebook unavailable.",
+        "tiktok": "TikTok unavailable."
+      },
+      "updatedAt": "2026-06-23 09:48:28"
+    },
+    "sources": [
+      {
+        "fieldName": "general",
+        "sourceUrl": "http://www.osterialacarega.com/",
+        "sourceTitle": "osterialacarega.com",
+        "excerpt": "– Official website providing description and contact.",
+        "confidence": 0.7,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://maps.google.com/?cid=9292072672379562349&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+        "sourceTitle": "maps.google.com",
+        "excerpt": "– Google Maps location and late‑hour hint.",
+        "confidence": 0.7,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://wanderlog.com/place/details/3639274/osteria-a-la-carega",
+        "sourceTitle": "wanderlog.com",
+        "excerpt": "– Detailed opening hours and venue overview.",
+        "confidence": 0.7,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "general",
+        "sourceUrl": "https://www.cittadiverona.it/osterie/osteria-a-la-carega/",
+        "sourceTitle": "cittadiverona.it",
+        "excerpt": "– City guide confirming address and contact.",
+        "confidence": 0.7,
+        "retrievedAt": "2026-06-23 08:37:11"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.facebook.com/osterialacarega/?locale=it_IT",
+        "sourceTitle": "Osteria A La Carega Facebook",
+        "excerpt": "Facebook posts support recurring DO FA SOUL acoustic programming on the small stage.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      },
+      {
+        "fieldName": "late_night_manual_cleanup",
+        "sourceUrl": "https://www.osterialacarega.com/",
+        "sourceTitle": "Osteria A La Carega official site",
+        "excerpt": "Official site supports the historical osteria/wine-and-beer format.",
+        "confidence": 0.8,
+        "retrievedAt": "2026-06-23 09:48:28"
+      }
+    ],
+    "media": [],
+    "dataQuality": {
+      "source": "manual",
+      "lastImportKind": "refresh",
+      "bookingValidation": "empty",
+      "manualCleanup": "late-night-ultra-research-demotion"
+    },
+    "lastEnrichedAt": "2026-06-23 09:48:28",
+    "updatedAt": "2026-06-23 09:48:28"
   },
   {
     "id": "google-ChIJQSGGnElff0cRp0DaiJua2Vg",

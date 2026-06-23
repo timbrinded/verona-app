@@ -24,6 +24,7 @@
     "enrich:prepare": "tsx scripts/enrichment/prepare.ts",
     "enrich:run": "tsx scripts/enrichment/run.ts",
     "enrich:run:late-night": "tsx scripts/enrichment/run-late-night.ts",
+    "enrich:cleanup-late-night": "tsx scripts/enrichment/manual-late-night-cleanup.ts",
     "enrich:parallel-json-to-csv": "tsx scripts/enrichment/parallel-json-to-csv.ts",
     "enrich:merge-candidates": "tsx scripts/enrichment/merge-candidates.ts",
     "enrich:merge-late-night": "tsx scripts/enrichment/merge-late-night.ts",
