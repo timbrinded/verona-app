@@ -20,10 +20,13 @@
     "enrich:qa": "tsx scripts/enrichment/qa.ts",
     "enrich:discover": "tsx scripts/enrichment/discover.ts",
     "enrich:google-candidates": "tsx scripts/enrichment/google-candidates.ts",
+    "enrich:late-night-candidates": "tsx scripts/enrichment/late-night-candidates.ts",
     "enrich:prepare": "tsx scripts/enrichment/prepare.ts",
     "enrich:run": "tsx scripts/enrichment/run.ts",
+    "enrich:run:late-night": "tsx scripts/enrichment/run-late-night.ts",
     "enrich:parallel-json-to-csv": "tsx scripts/enrichment/parallel-json-to-csv.ts",
     "enrich:merge-candidates": "tsx scripts/enrichment/merge-candidates.ts",
+    "enrich:merge-late-night": "tsx scripts/enrichment/merge-late-night.ts",
     "enrich:import": "tsx scripts/enrichment/import.ts",
     "enrich:media": "tsx scripts/enrichment/process-media.ts",
     "enrich:promote-seed": "tsx scripts/enrichment/promote-seed.ts"

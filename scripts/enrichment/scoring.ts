@@ -22,6 +22,28 @@ export interface MethodologyScore {
   components: ScoreComponents;
 }
 
+export interface LateNightScoreComponents {
+  openPastMidnight: boolean;
+  recentLateEvidence: boolean;
+  hoursListed: boolean;
+  multiSource: boolean;
+  officialSource: boolean;
+  eventSocialProof: boolean;
+  musicDefined: boolean;
+  crowdFit: boolean;
+  queueManageable: boolean;
+  transportAccess: boolean;
+  comfortWarning: boolean;
+  strictDoorWarning: boolean;
+  deadNightRisk: boolean;
+}
+
+export interface LateNightMethodologyScore {
+  confidence: number;
+  vibe: number;
+  components: LateNightScoreComponents;
+}
+
 const EMPTY_COMPONENTS: ScoreComponents = {
   operatingStatus: false,
   recentReviews: false,
@@ -58,6 +80,38 @@ const ALIASES: Record<keyof ScoreComponents, string[]> = {
   decliningRatings: ["declining", "trending down", "recent reviews trending down"],
 };
 
+const EMPTY_LATE_NIGHT_COMPONENTS: LateNightScoreComponents = {
+  openPastMidnight: false,
+  recentLateEvidence: false,
+  hoursListed: false,
+  multiSource: false,
+  officialSource: false,
+  eventSocialProof: false,
+  musicDefined: false,
+  crowdFit: false,
+  queueManageable: false,
+  transportAccess: false,
+  comfortWarning: false,
+  strictDoorWarning: false,
+  deadNightRisk: false,
+};
+
+const LATE_NIGHT_ALIASES: Record<keyof LateNightScoreComponents, string[]> = {
+  openPastMidnight: ["open past midnight", "after midnight", "past 00:00", "open late", "late closing"],
+  recentLateEvidence: ["recent late evidence", "recent late-night", "recent posts", "recent reviews", "current events"],
+  hoursListed: ["hours listed", "opening hours", "published hours", "hours"],
+  multiSource: ["multi-source", "multi source", "multiple sources", "cross checked"],
+  officialSource: ["official source", "official website", "google business", "venue website"],
+  eventSocialProof: ["event proof", "social proof", "instagram", "promoter", "dj", "dice", "ra.co", "resident advisor", "event listing"],
+  musicDefined: ["music defined", "music style", "genre", "dj", "live music", "music"],
+  crowdFit: ["crowd fit", "good crowd", "age range", "locals", "student", "creative crowd"],
+  queueManageable: ["manageable queue", "low queue", "short queue", "walk-in", "easy entry"],
+  transportAccess: ["transport", "taxi", "night bus", "walkable", "central"],
+  comfortWarning: ["hot", "sweaty", "packed", "poor ventilation", "comfort warning"],
+  strictDoorWarning: ["strict door", "selective door", "door policy", "dress code", "last entry"],
+  deadNightRisk: ["dead night", "quiet night", "empty", "weekday risk", "inconsistent"],
+};
+
 function normalizedKey(value: string): string {
   return value
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -78,6 +132,19 @@ function booleanValue(value: unknown): boolean {
 function setComponent(components: ScoreComponents, key: string, value: boolean): void {
   const normalized = normalizedKey(key);
   for (const [component, aliases] of Object.entries(ALIASES) as [keyof ScoreComponents, string[]][]) {
+    if (normalized === normalizedKey(component) || aliases.some((alias) => normalized.includes(alias))) {
+      components[component] = value;
+      return;
+    }
+  }
+}
+
+function setLateNightComponent(components: LateNightScoreComponents, key: string, value: boolean): void {
+  const normalized = normalizedKey(key);
+  for (const [component, aliases] of Object.entries(LATE_NIGHT_ALIASES) as [
+    keyof LateNightScoreComponents,
+    string[],
+  ][]) {
     if (normalized === normalizedKey(component) || aliases.some((alias) => normalized.includes(alias))) {
       components[component] = value;
       return;
@@ -107,6 +174,33 @@ export function parseScoreComponents(value: string): ScoreComponents {
 
     const negative = /^(no|not|missing|without)\b/i.test(normalized);
     setComponent(components, normalized, !negative);
+  }
+
+  return components;
+}
+
+export function parseLateNightScoreComponents(value: string): LateNightScoreComponents {
+  const components = { ...EMPTY_LATE_NIGHT_COMPONENTS };
+  if (!value.trim()) return components;
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      for (const [key, rawValue] of Object.entries(parsed)) {
+        setLateNightComponent(components, key, booleanValue(rawValue));
+      }
+      return components;
+    }
+  } catch {
+    // Fall through to delimiter parsing.
+  }
+
+  for (const token of value.split(/[;\n|,]/)) {
+    const normalized = token.trim();
+    if (!normalized) continue;
+
+    const negative = /^(no|not|missing|without)\b/i.test(normalized);
+    setLateNightComponent(components, normalized, !negative);
   }
 
   return components;
@@ -145,6 +239,44 @@ export function methodologyScore(value: string): MethodologyScore {
   return {
     confidence: confidenceFromComponents(components),
     vibe: vibeFromComponents(components),
+    components,
+  };
+}
+
+export function lateNightConfidenceFromComponents(components: LateNightScoreComponents): number {
+  const score =
+    (components.openPastMidnight ? 35 : 0) +
+    (components.recentLateEvidence ? 25 : 0) +
+    (components.hoursListed ? 15 : 0) +
+    (components.multiSource ? 15 : 0) +
+    (components.officialSource ? 10 : 0);
+
+  return Math.min(1, Math.max(0, score / 100));
+}
+
+export function lateNightVibeFromComponents(components: LateNightScoreComponents): number {
+  const score =
+    (components.eventSocialProof ? 4 : 0) +
+    (components.musicDefined ? 4 : 0) +
+    (components.crowdFit ? 3 : 0) +
+    (components.queueManageable ? 2 : 0) +
+    (components.transportAccess ? 2 : 0) +
+    (components.openPastMidnight ? 2 : 0) +
+    (components.recentLateEvidence ? 2 : 0) +
+    (components.multiSource ? 1 : 0) -
+    (components.comfortWarning ? 2 : 0) -
+    (components.strictDoorWarning ? 2 : 0) -
+    (components.deadNightRisk ? 3 : 0);
+
+  return Math.min(20, Math.max(0, score));
+}
+
+export function lateNightMethodologyScore(value: string): LateNightMethodologyScore {
+  const components = parseLateNightScoreComponents(value);
+
+  return {
+    confidence: lateNightConfidenceFromComponents(components),
+    vibe: lateNightVibeFromComponents(components),
     components,
   };
 }

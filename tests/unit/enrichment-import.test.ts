@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { citations, validateEnrichmentRows, validateImportTargets } from "../../scripts/enrichment/import";
+import { citations, lateNightData, validateEnrichmentRows, validateImportTargets } from "../../scripts/enrichment/import";
 
 describe("enrichment import validation", () => {
   it("requires unique place ids", () => {
@@ -32,5 +32,33 @@ describe("enrichment import validation", () => {
     ]);
 
     expect(citations("Seen at https://example.com/a and https://example.com/b")).toHaveLength(2);
+  });
+
+  it("maps late-night enrichment columns into data quality metadata", () => {
+    expect(
+      lateNightData({
+        late_open_confidence: "0.82",
+        latest_confirmed_close: "02:00",
+        late_days: "Fri;Sat",
+        music_style: "House and disco",
+        crowd_age_range: "23-35",
+        queue_likelihood: "medium",
+        nightlife_score_components: JSON.stringify({
+          openPastMidnight: true,
+          musicDefined: true,
+        }),
+      }),
+    ).toMatchObject({
+      lateOpenConfidence: 0.82,
+      latestConfirmedClose: "02:00",
+      lateDays: ["Fri", "Sat"],
+      musicStyle: "House and disco",
+      crowdAgeRange: "23-35",
+      queueLikelihood: "medium",
+      scoreComponents: {
+        openPastMidnight: true,
+        musicDefined: true,
+      },
+    });
   });
 });

@@ -17,6 +17,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Trattoria: "#00e5ff",
   "Wine Bar": "#9b5cff",
   "Cocktail Bar": "#ff3df2",
+  "Late Night": "#111827",
   Aperitivo: "#ffb000",
   Pub: "#00e5ff",
   Gelato: "#e6ff00",
@@ -31,6 +32,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   Trattoria: "🍽️",
   "Wine Bar": "🍷",
   "Cocktail Bar": "🍸",
+  "Late Night": "🌙",
   Aperitivo: "🥂",
   Pub: "🍺",
   Gelato: "🍦",
@@ -142,10 +144,31 @@ interface VibeBreakdown {
   penalties: VibeFactor[];
 }
 
+function objectRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function textSignal(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function numberSignal(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function scoreComponent(place: Place, key: string): boolean {
-  const components = place.dataQuality.scoreComponents;
-  if (!components || typeof components !== "object" || Array.isArray(components)) return false;
-  return (components as Record<string, unknown>)[key] === true;
+  const components = objectRecord(place.dataQuality.scoreComponents);
+  return components[key] === true;
+}
+
+function lateNightRecord(place: Place): Record<string, unknown> {
+  return objectRecord(place.dataQuality.lateNight);
+}
+
+function lateNightComponent(place: Place, key: string): boolean {
+  const lateNight = lateNightRecord(place);
+  const components = objectRecord(lateNight.scoreComponents || place.dataQuality.scoreComponents);
+  return components[key] === true;
 }
 
 function allocateFactors(rawFactors: VibeFactor[], target: number): VibeFactor[] {
@@ -173,6 +196,10 @@ function allocateFactors(rawFactors: VibeFactor[], target: number): VibeFactor[]
 }
 
 function vibeBreakdown(place: Place): VibeBreakdown {
+  if (place.category === "Late Night") {
+    return lateNightVibeBreakdown(place);
+  }
+
   const total = Math.min(20, Math.max(0, Math.round(Number.isFinite(place.vibe) ? place.vibe : 0)));
   const details = place.details;
   const sourceCount = place.sources.length;
@@ -246,6 +273,115 @@ function vibeBreakdown(place: Place): VibeBreakdown {
   const factors = allocateFactors(rawFactors, positiveTarget);
 
   return { total, factors, penalties };
+}
+
+function lateNightVibeBreakdown(place: Place): VibeBreakdown {
+  const total = Math.min(20, Math.max(0, Math.round(Number.isFinite(place.vibe) ? place.vibe : 0)));
+  const lateNight = lateNightRecord(place);
+  const latestClose = textSignal(lateNight.latestConfirmedClose);
+  const lateEvidence = textSignal(lateNight.lateHoursEvidence);
+  const musicStyle = textSignal(lateNight.musicStyle);
+  const crowdAgeRange = textSignal(lateNight.crowdAgeRange);
+  const crowdType = textSignal(lateNight.crowdType);
+  const queueLikelihood = textSignal(lateNight.queueLikelihood);
+  const queueDuration = textSignal(lateNight.queueDuration);
+  const busyLevel = textSignal(lateNight.busyLevel);
+  const peakTime = textSignal(lateNight.peakTime);
+  const heatSweatLevel = textSignal(lateNight.heatSweatLevel);
+  const doorPolicy = textSignal(lateNight.doorPolicy);
+  const lastEntryRisk = textSignal(lateNight.lastEntryRisk);
+  const lateOpenConfidence = numberSignal(lateNight.lateOpenConfidence) || place.confidence;
+
+  const rawFactors: VibeFactor[] = [
+    {
+      label: "Late-open proof",
+      detail: latestClose
+        ? `Latest confirmed close ${latestClose}`
+        : lateEvidence || `${Math.round(lateOpenConfidence * 100)}% late-open confidence`,
+      value: lateNightComponent(place, "openPastMidnight") ? 4 : latestClose || lateEvidence ? 2 : 0,
+    },
+    {
+      label: "Current evidence",
+      detail: [
+        lateNightComponent(place, "officialSource") ? "official source" : "",
+        lateNightComponent(place, "multiSource") ? "multi-source" : "",
+        lateNightComponent(place, "recentLateEvidence") ? "recent activity" : "",
+      ]
+        .filter(Boolean)
+        .join(" · ") || `${place.sources.length} cited ${place.sources.length === 1 ? "source" : "sources"}`,
+      value:
+        (lateNightComponent(place, "recentLateEvidence") ? 2 : 0) +
+        (lateNightComponent(place, "multiSource") ? 1 : 0) +
+        (lateNightComponent(place, "officialSource") ? 1 : 0),
+    },
+    {
+      label: "Music",
+      detail: musicStyle || "Music style not captured yet",
+      value: lateNightComponent(place, "musicDefined") ? 4 : musicStyle ? 2 : 0,
+    },
+    {
+      label: "Crowd",
+      detail: [crowdAgeRange, crowdType].filter(Boolean).join(" · ") || "Crowd profile not captured yet",
+      value: lateNightComponent(place, "crowdFit") ? 3 : crowdAgeRange || crowdType ? 2 : 0,
+    },
+    {
+      label: "Entry practicality",
+      detail: [queueLikelihood, queueDuration, doorPolicy, lastEntryRisk].filter(Boolean).join(" · ") || "Entry details not captured yet",
+      value:
+        (lateNightComponent(place, "queueManageable") ? 2 : 0) +
+        (lateNightComponent(place, "transportAccess") ? 2 : 0),
+    },
+    {
+      label: "Energy",
+      detail: [busyLevel, peakTime, textSignal(lateNight.dancefloor)].filter(Boolean).join(" · ") || "Energy profile not captured yet",
+      value: lateNightComponent(place, "eventSocialProof") ? 4 : busyLevel || peakTime ? 2 : 0,
+    },
+  ].filter((factor) => factor.value > 0);
+
+  const penalties: VibeFactor[] = [
+    lateNightComponent(place, "comfortWarning")
+      ? {
+          label: "Heat or crowding",
+          detail: heatSweatLevel || "Comfort warning was present in enrichment",
+          value: -2,
+        }
+      : null,
+    lateNightComponent(place, "strictDoorWarning")
+      ? {
+          label: "Door risk",
+          detail: [doorPolicy, lastEntryRisk].filter(Boolean).join(" · ") || "Door warning was present in enrichment",
+          value: -2,
+        }
+      : null,
+    lateNightComponent(place, "deadNightRisk")
+      ? { label: "Dead-night risk", detail: "Inconsistent late-night energy warning was present", value: -3 }
+      : null,
+  ].filter((factor): factor is VibeFactor => factor !== null);
+
+  const penaltyTotal = penalties.reduce((sum, factor) => sum + factor.value, 0);
+  const positiveTarget = total - penaltyTotal;
+  const factors = allocateFactors(rawFactors, positiveTarget);
+
+  return { total, factors, penalties };
+}
+
+function lateNightDetailRows(place: Place): { label: string; value: string }[] {
+  const lateNight = lateNightRecord(place);
+  const lateDays = Array.isArray(lateNight.lateDays)
+    ? lateNight.lateDays.filter((day): day is string => typeof day === "string" && day.length > 0).join(" · ")
+    : "";
+
+  return [
+    { label: "Latest close", value: textSignal(lateNight.latestConfirmedClose) },
+    { label: "Late days", value: lateDays },
+    { label: "Music", value: textSignal(lateNight.musicStyle) },
+    { label: "Crowd", value: [textSignal(lateNight.crowdAgeRange), textSignal(lateNight.crowdType)].filter(Boolean).join(" · ") },
+    { label: "Queue", value: [textSignal(lateNight.queueLikelihood), textSignal(lateNight.queueDuration)].filter(Boolean).join(" · ") },
+    { label: "Door", value: [textSignal(lateNight.doorPolicy), textSignal(lateNight.lastEntryRisk)].filter(Boolean).join(" · ") },
+    { label: "Busy", value: [textSignal(lateNight.busyLevel), textSignal(lateNight.peakTime)].filter(Boolean).join(" · ") },
+    { label: "Heat", value: textSignal(lateNight.heatSweatLevel) },
+    { label: "Dancefloor", value: textSignal(lateNight.dancefloor) },
+  ].filter((row) => row.value.length > 0);
 }
 
 function selectedTextSignal(place: Place): string {
@@ -635,6 +771,7 @@ export default function Home() {
   const selectedVibeScore = selectedPlace ? vibeScore(selectedPlace.vibe) : "";
   const selectedMenuHighlights = selectedPlace ? textList(selectedPlace.details.menuHighlights) : [];
   const selectedVisitTips = selectedPlace ? textList(selectedPlace.details.visitTips) : [];
+  const selectedLateNightDetails = selectedPlace ? lateNightDetailRows(selectedPlace) : [];
 
   return (
     <main className="verona-brutal h-screen w-screen relative overflow-hidden isolate bg-[var(--vb-paper)]">
@@ -787,6 +924,21 @@ export default function Home() {
                     {selectedPlace.details.openingHours.length > 0 && (
                       <DetailLine label="Hours">{selectedPlace.details.openingHours.slice(0, 5).join(" · ")}</DetailLine>
                     )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {selectedLateNightDetails.length > 0 && (
+              <AccordionItem value="nightlife" className="px-2.5">
+                <AccordionTrigger>Late-night intel</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-2">
+                    {selectedLateNightDetails.map((row) => (
+                      <DetailLine key={row.label} label={row.label}>
+                        {row.value}
+                      </DetailLine>
+                    ))}
                   </div>
                 </AccordionContent>
               </AccordionItem>

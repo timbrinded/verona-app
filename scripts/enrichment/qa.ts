@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { listPlaces } from "../../src/lib/places";
 import { isDecorativeAsset, isSocialUrl } from "../../src/lib/media-quality";
 import { validateBookingUrl } from "./booking";
+import { textShowsPastMidnight } from "./merge-late-night";
 
 interface QaIssue {
   id: string;
@@ -12,8 +13,24 @@ interface QaIssue {
   message: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function hasCoordinate(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function numberValue(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function isUnknown(value: string): boolean {
+  return !value || ["unknown", "unclear", "not specified", "not available"].includes(value.toLowerCase());
 }
 
 async function qa(): Promise<void> {
@@ -25,6 +42,7 @@ async function qa(): Promise<void> {
       : join(process.cwd(), "data", "enrichment", `qa-report-${new Date().toISOString().slice(0, 10)}.json`);
   const places = await listPlaces();
   const issues: QaIssue[] = [];
+  const warnings: QaIssue[] = [];
 
   for (const place of places) {
     if (!place.isHomeBase && (!hasCoordinate(place.lat) || !hasCoordinate(place.lng))) {
@@ -47,6 +65,53 @@ async function qa(): Promise<void> {
       issues.push({ id: place.id, name: place.name, field: "citations", message: "Missing citations" });
     }
 
+    if (place.category === "Late Night") {
+      const lateNight = isRecord(place.dataQuality.lateNight) ? place.dataQuality.lateNight : {};
+      const lateOpenConfidence = numberValue(lateNight.lateOpenConfidence) || place.confidence;
+      const latestClose = stringValue(lateNight.latestConfirmedClose);
+      const lateEvidence = stringValue(lateNight.lateHoursEvidence);
+      const queueLikelihood = stringValue(lateNight.queueLikelihood);
+      const queueDuration = stringValue(lateNight.queueDuration);
+      const doorPolicy = stringValue(lateNight.doorPolicy);
+      const lastEntryRisk = stringValue(lateNight.lastEntryRisk);
+
+      if (!textShowsPastMidnight([latestClose, lateEvidence, place.details.openingHours.join(" ")].join(" "))) {
+        issues.push({
+          id: place.id,
+          name: place.name,
+          field: "late_hours_evidence",
+          message: "Late Night venue lacks evidence of being open past midnight",
+        });
+      }
+
+      if (lateOpenConfidence < 0.7) {
+        issues.push({
+          id: place.id,
+          name: place.name,
+          field: "late_open_confidence",
+          message: `Late-open confidence below 0.7: ${lateOpenConfidence}`,
+        });
+      }
+
+      if (queueLikelihood.toLowerCase() === "high" && !queueDuration) {
+        warnings.push({
+          id: place.id,
+          name: place.name,
+          field: "queue_duration",
+          message: "High queue likelihood without a queue duration estimate",
+        });
+      }
+
+      if (isUnknown(doorPolicy) || isUnknown(lastEntryRisk)) {
+        warnings.push({
+          id: place.id,
+          name: place.name,
+          field: "door_policy",
+          message: "Door policy or last-entry risk is unknown",
+        });
+      }
+    }
+
     for (const media of place.media) {
       if (!media.approved) {
         issues.push({ id: place.id, name: place.name, field: "media", message: "Unapproved media is exposed" });
@@ -67,7 +132,9 @@ async function qa(): Promise<void> {
     checkedAt: new Date().toISOString(),
     places: places.length,
     issueCount: issues.length,
+    warningCount: warnings.length,
     issues,
+    warnings,
   };
   await mkdir(dirname(reportPath), { recursive: true });
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);

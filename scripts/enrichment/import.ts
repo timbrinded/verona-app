@@ -5,7 +5,13 @@ import type { InStatement } from "@libsql/client";
 import { libsql } from "../../src/db/client";
 import { parseCsv, type CsvRow } from "./csv";
 import { resolveBookingUpdate } from "./booking";
-import { methodologyScore } from "./scoring";
+import {
+  lateNightConfidenceFromComponents,
+  lateNightMethodologyScore,
+  lateNightVibeFromComponents,
+  methodologyScore,
+  type LateNightScoreComponents,
+} from "./scoring";
 
 interface Citation {
   fieldName: string;
@@ -26,6 +32,22 @@ interface ExistingPlace {
   booking: string;
   dataQuality: Record<string, unknown>;
 }
+
+const LATE_NIGHT_VALUE_FIELDS = [
+  ["lateHoursEvidence", ["late_hours_evidence"]],
+  ["latestConfirmedClose", ["latest_confirmed_close"]],
+  ["musicStyle", ["music_style"]],
+  ["crowdAgeRange", ["crowd_age_range"]],
+  ["crowdType", ["crowd_type"]],
+  ["queueLikelihood", ["queue_likelihood"]],
+  ["queueDuration", ["queue_duration"]],
+  ["doorPolicy", ["door_policy"]],
+  ["busyLevel", ["busy_level"]],
+  ["peakTime", ["peak_time"]],
+  ["heatSweatLevel", ["heat_sweat_level"]],
+  ["dancefloor", ["dancefloor"]],
+  ["lastEntryRisk", ["last_entry_risk"]],
+] as const;
 
 interface ImportOptions {
   source: string;
@@ -108,6 +130,124 @@ function socialLinks(row: CsvRow): Record<string, string> {
   );
 }
 
+function isLateNightRow(row: CsvRow): boolean {
+  const category = get(row, ["category", "place_category"]).toLowerCase();
+  return category === "late night" || Boolean(get(row, ["nightlife_score_components", "late_night_score_components"]));
+}
+
+function hasTrueComponent(components: object): boolean {
+  return Object.values(components).some((value) => value === true);
+}
+
+function usefulLateNightValue(value: string): boolean {
+  const normalized = value.trim().toLowerCase().replace(/[.]+$/, "");
+  if (!normalized) return false;
+  return ![
+    "unknown",
+    "unavailable",
+    "not available",
+    "not specified",
+    "music style unknown",
+    "crowd age range unknown",
+    "crowd type unknown",
+    "queue likelihood unknown",
+    "queue duration unknown",
+    "door policy unknown",
+    "busy level unknown",
+    "peak time unknown",
+    "heat/sweat level unknown",
+    "dancefloor unknown",
+    "last entry risk unknown",
+    "best time to visit unknown",
+  ].includes(normalized);
+}
+
+function textShowsPastMidnight(value: string): boolean {
+  const normalized = value.toLowerCase();
+  if (/\bafter\s+midnight\b|\bpast\s+midnight\b|\bpast\s+00:00\b/.test(normalized)) return true;
+
+  for (const match of normalized.matchAll(/\b(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)\b/g)) {
+    const hour = Number(match[1]);
+    const minute = Number(match[2] ?? "0");
+    const suffix = match[3].replace(/\./g, "");
+    if (suffix === "am") {
+      if (hour === 12 && minute > 0) return true;
+      if (hour >= 1 && hour <= 6) return true;
+    }
+  }
+
+  for (const match of normalized.matchAll(/\b(\d{1,2})[:.](\d{2})\b/g)) {
+    const hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if (hour === 0 && minute > 0) return true;
+    if (hour >= 1 && hour <= 6) return true;
+  }
+
+  return false;
+}
+
+function derivedLateNightComponents(row: CsvRow): LateNightScoreComponents {
+  const lateText = [
+    get(row, ["latest_confirmed_close"]),
+    get(row, ["late_hours_evidence"]),
+    get(row, ["opening_hours"]),
+  ].join(" ");
+  const parsedCitations = citations(get(row, ["citations", "sources"]));
+  const citationText = parsedCitations.map((citation) => `${citation.sourceUrl} ${citation.excerpt}`).join(" ").toLowerCase();
+  const queue = get(row, ["queue_likelihood", "queue_duration"]).toLowerCase();
+  const door = get(row, ["door_policy", "last_entry_risk"]).toLowerCase();
+  const heat = get(row, ["heat_sweat_level", "busy_level"]).toLowerCase();
+
+  return {
+    openPastMidnight: textShowsPastMidnight(lateText),
+    recentLateEvidence: usefulLateNightValue(get(row, ["late_hours_evidence"])),
+    hoursListed: usefulLateNightValue(get(row, ["opening_hours"])),
+    multiSource: parsedCitations.length >= 2,
+    officialSource: Boolean(get(row, ["website", "official_website"])) || /official|instagram|facebook|google/.test(citationText),
+    eventSocialProof: /instagram|facebook|event|promoter|dice|ra\.co|resident advisor|dj/.test(citationText),
+    musicDefined: usefulLateNightValue(get(row, ["music_style"])),
+    crowdFit: usefulLateNightValue(get(row, ["crowd_age_range"])) || usefulLateNightValue(get(row, ["crowd_type"])),
+    queueManageable: usefulLateNightValue(queue) && !/\bhigh\b|30\+|long/.test(queue),
+    transportAccess: false,
+    comfortWarning: /\bhot\b|sweaty|packed|poor ventilation/.test(heat),
+    strictDoorWarning: /\bstrict\b|selective|high|dress code|last entry/.test(door),
+    deadNightRisk: /\bdead\b|empty|quiet|inconsistent/.test(heat),
+  };
+}
+
+function shouldUseParsedLateNightComponents(
+  parsed: LateNightScoreComponents,
+  derived: LateNightScoreComponents,
+): boolean {
+  if (parsed.openPastMidnight) return true;
+  return !derived.openPastMidnight && hasTrueComponent(parsed);
+}
+
+export function lateNightData(row: CsvRow): Record<string, unknown> {
+  const data: Record<string, unknown> = {};
+  const lateOpenConfidence = numberValue(get(row, ["late_open_confidence", "late_confidence"]));
+  const lateDays = stringArray(get(row, ["late_days", "late_nights"]));
+  const scoreText = get(row, ["nightlife_score_components", "late_night_score_components"]);
+
+  if (lateOpenConfidence > 0) {
+    data.lateOpenConfidence = lateOpenConfidence > 1 ? lateOpenConfidence / 100 : lateOpenConfidence;
+  }
+  if (lateDays.length > 0) data.lateDays = lateDays;
+
+  for (const [target, names] of LATE_NIGHT_VALUE_FIELDS) {
+    const value = get(row, [...names]);
+    if (value) data[target] = value;
+  }
+
+  if (scoreText || isLateNightRow(row)) {
+    const parsed = lateNightMethodologyScore(scoreText).components;
+    const derived = derivedLateNightComponents(row);
+    data.scoreComponents = shouldUseParsedLateNightComponents(parsed, derived) ? parsed : derived;
+  }
+
+  return data;
+}
+
 function recordValue(value: unknown): Record<string, unknown> {
   if (value && typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
   if (typeof value !== "string" || !value.trim()) return {};
@@ -171,6 +311,15 @@ function slugBase(name: string, id: string): string {
 
 function normalizeCategory(category: string): string {
   return category === "Craft Beer" ? "Pub" : category;
+}
+
+function isDisallowedLateNightSource(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host.includes("tripadvisor.") || host.includes("thefork.");
+  } catch {
+    return /tripadvisor|thefork/i.test(url);
+  }
 }
 
 function addLinkStatement(
@@ -261,15 +410,39 @@ async function existingPlaces(ids: string[]): Promise<Map<string, ExistingPlace>
 }
 
 function rowConfidence(row: CsvRow): { confidence: number; vibe: number; components: Record<string, unknown> } {
-  const scoreText = get(row, ["score_components", "methodology_score_components", "confidence_components"]);
-  const methodology = methodologyScore(scoreText);
+  const scoreText = isLateNightRow(row)
+    ? get(row, ["nightlife_score_components", "late_night_score_components", "score_components"])
+    : get(row, ["score_components", "methodology_score_components", "confidence_components"]);
+  const methodology = isLateNightRow(row) ? lateNightMethodologyScore(scoreText) : methodologyScore(scoreText);
+  const derivedLateNight = isLateNightRow(row) ? derivedLateNightComponents(row) : null;
+  const useParsedLateNight =
+    isLateNightRow(row) && derivedLateNight
+      ? shouldUseParsedLateNightComponents(methodology.components as LateNightScoreComponents, derivedLateNight)
+      : false;
+  const derivedLateNightConfidence = derivedLateNight ? lateNightConfidenceFromComponents(derivedLateNight) : 0;
+  const derivedLateNightVibe = derivedLateNight ? lateNightVibeFromComponents(derivedLateNight) : 0;
+  const components =
+    isLateNightRow(row) && !useParsedLateNight
+      ? derivedLateNight ?? methodology.components
+      : methodology.components;
+  const methodologyConfidence = isLateNightRow(row) && !useParsedLateNight ? 0 : methodology.confidence;
+  const methodologyVibe = isLateNightRow(row) && !useParsedLateNight ? 0 : methodology.vibe;
   const explicitConfidence = numberValue(get(row, ["confidence", "confidence_score"]));
+  const explicitLateConfidence = isLateNightRow(row) ? numberValue(get(row, ["late_open_confidence", "late_confidence"])) : 0;
   const explicitVibe = numberValue(get(row, ["vibe_score", "vibe"]));
 
   return {
-    confidence: explicitConfidence > 1 ? explicitConfidence / 100 : explicitConfidence || methodology.confidence,
-    vibe: Math.trunc(explicitVibe > 0 && explicitVibe <= 1 ? explicitVibe * 20 : explicitVibe || methodology.vibe),
-    components: scoreText ? { ...methodology.components } : {},
+    confidence:
+      explicitConfidence > 1
+        ? explicitConfidence / 100
+        : explicitConfidence ||
+          (explicitLateConfidence > 1 ? explicitLateConfidence / 100 : explicitLateConfidence) ||
+          methodologyConfidence ||
+          derivedLateNightConfidence,
+    vibe: Math.trunc(
+      explicitVibe > 0 && explicitVibe <= 1 ? explicitVibe * 20 : explicitVibe || methodologyVibe || derivedLateNightVibe,
+    ),
+    components: scoreText || derivedLateNight ? { ...components } : {},
   };
 }
 
@@ -279,6 +452,7 @@ function importDataQuality(
   bookingReason: string,
 ): Record<string, unknown> {
   const score = rowConfidence(row);
+  const lateNight = lateNightData(row);
 
   return {
     ...(existing?.dataQuality ?? {}),
@@ -286,6 +460,7 @@ function importDataQuality(
     lastImportKind: existing ? "refresh" : "new_candidate",
     bookingValidation: bookingReason,
     scoreComponents: score.components,
+    ...(Object.keys(lateNight).length > 0 ? { lateNight } : {}),
   };
 }
 
@@ -305,8 +480,9 @@ function addNewPlaceStatement(
 ): void {
   const placeId = get(row, ["id", "place_id"]);
   const name = requireNewPlaceValue(row, ["official_name", "name"], "name");
-  const sourceCategory = requireNewPlaceValue(row, ["category", "place_category"], "category");
-  const category = normalizeCategory(sourceCategory);
+  const publicCategory = requireNewPlaceValue(row, ["category", "place_category"], "category");
+  const sourceCategory = get(row, ["source_category", "venue_type", "venue_subtype", "place_type"]) || publicCategory;
+  const category = normalizeCategory(publicCategory);
   const score = rowConfidence(row);
   const lat = nullableNumberValue(get(row, ["lat", "latitude"]));
   const lng = nullableNumberValue(get(row, ["lng", "longitude", "lon"]));
@@ -495,7 +671,9 @@ function addImportRowStatements(
     addLinkStatement(statements, placeId, `social_${network}`, network[0].toUpperCase() + network.slice(1), url, true);
   }
 
-  const parsedCitations = citations(get(row, ["citations", "sources"]));
+  const parsedCitations = citations(get(row, ["citations", "sources"])).filter(
+    (citation) => !isLateNightRow(row) || !isDisallowedLateNightSource(citation.sourceUrl),
+  );
   for (const citation of parsedCitations) {
     statements.push({
       sql: "DELETE FROM place_sources WHERE place_id = ? AND field_name = ? AND source_url = ?",
